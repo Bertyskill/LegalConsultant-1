@@ -3,166 +3,22 @@
 {% block title %}Главная | Решение есть. Консалтинг{% endblock %}
 
 {% block content %}
-<div class="row align-items-center my-5">
-    <div class="col-lg-6">
-        <h1 class="fw-bold mb-4">Юридические консультации для вашего бизнеса</h1>
-        <p class="lead mb-4">«Решение есть. Консалтинг» — команда профессиональных юристов, специализирующихся на правовом сопровождении бизнеса</p>
-        <div class="d-flex gap-3 mb-4">
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-8 col-lg-6 text-center">
+        <div class="mb-5 d-flex justify-content-center">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Решение есть. Консалтинг" class="img-fluid" style="max-width: 300px;">
+        </div>
+        <h1 class="fw-bold mb-4">Решение есть. Консалтинг</h1>
+        <p class="lead mb-5">Юридическая консалтинговая компания</p>
+        
+        <div class="d-flex justify-content-center gap-4">
             <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
-                <i data-feather="user-plus" class="feather-sm me-1"></i> Зарегистрироваться
+                <i data-feather="user-plus" class="feather-sm me-2"></i> Регистрация
             </a>
             <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg">
-                <i data-feather="log-in" class="feather-sm me-1"></i> Войти
+                <i data-feather="log-in" class="feather-sm me-2"></i> Войти
             </a>
         </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card shadow">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-center mb-4">
-                    <i data-feather="shield" class="feather-lg" style="width: 64px; height: 64px; color: var(--bs-primary);"></i>
-                </div>
-                <h3 class="text-center mb-3">Юридическая защита вашего бизнеса</h3>
-                <p class="text-center">Наши эксперты готовы предоставить квалифицированную помощь в различных правовых вопросах</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<hr class="my-5">
-
-<div class="row mb-5">
-    <div class="col-12 text-center mb-4">
-        <h2 class="fw-bold">Наши услуги</h2>
-        <p class="lead">Правовое сопровождение по основным отраслям права</p>
-    </div>
-    
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center p-4">
-                <div class="rounded-circle bg-primary-subtle p-3 d-inline-flex justify-content-center align-items-center mb-3" style="width: 70px; height: 70px;">
-                    <i data-feather="briefcase" style="width: 32px; height: 32px; color: var(--bs-primary);"></i>
-                </div>
-                <h3 class="h5 mb-3">Трудовое право</h3>
-                <p class="mb-3">Консультации по вопросам трудовых отношений, договоров и разрешения споров</p>
-                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-sm stretched-link">Подробнее</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center p-4">
-                <div class="rounded-circle bg-primary-subtle p-3 d-inline-flex justify-content-center align-items-center mb-3" style="width: 70px; height: 70px;">
-                    <i data-feather="dollar-sign" style="width: 32px; height: 32px; color: var(--bs-primary);"></i>
-                </div>
-                <h3 class="h5 mb-3">Налоговое право</h3>
-                <p class="mb-3">Оптимизация налогообложения, сопровождение проверок, консультации по сложным вопросам</p>
-                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-sm stretched-link">Подробнее</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center p-4">
-                <div class="rounded-circle bg-primary-subtle p-3 d-inline-flex justify-content-center align-items-center mb-3" style="width: 70px; height: 70px;">
-                    <i data-feather="award" style="width: 32px; height: 32px; color: var(--bs-primary);"></i>
-                </div>
-                <h3 class="h5 mb-3">Административное право</h3>
-                <p class="mb-3">Взаимодействие с государственными органами, лицензирование, разрешения</p>
-                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-sm stretched-link">Подробнее</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center p-4">
-                <div class="rounded-circle bg-primary-subtle p-3 d-inline-flex justify-content-center align-items-center mb-3" style="width: 70px; height: 70px;">
-                    <i data-feather="layers" style="width: 32px; height: 32px; color: var(--bs-primary);"></i>
-                </div>
-                <h3 class="h5 mb-3">Корпоративное право</h3>
-                <p class="mb-3">Создание и реорганизация компаний, корпоративное управление, сделки</p>
-                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-sm stretched-link">Подробнее</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row align-items-center mb-5 py-4 bg-primary-subtle rounded-3">
-    <div class="col-lg-6 p-4">
-        <h2 class="fw-bold mb-3">Почему выбирают нас</h2>
-        <ul class="list-unstyled">
-            <li class="mb-3 d-flex align-items-center">
-                <i data-feather="check-circle" class="text-primary me-2"></i>
-                <span>Опытные юристы с профильным образованием</span>
-            </li>
-            <li class="mb-3 d-flex align-items-center">
-                <i data-feather="check-circle" class="text-primary me-2"></i>
-                <span>Индивидуальный подход к каждому клиенту</span>
-            </li>
-            <li class="mb-3 d-flex align-items-center">
-                <i data-feather="check-circle" class="text-primary me-2"></i>
-                <span>Оперативное реагирование на запросы</span>
-            </li>
-            <li class="mb-3 d-flex align-items-center">
-                <i data-feather="check-circle" class="text-primary me-2"></i>
-                <span>Конфиденциальность и безопасность данных</span>
-            </li>
-            <li class="d-flex align-items-center">
-                <i data-feather="check-circle" class="text-primary me-2"></i>
-                <span>Удобный онлайн-сервис для взаимодействия</span>
-            </li>
-        </ul>
-    </div>
-    <div class="col-lg-6 p-4">
-        <h3 class="fw-bold mb-3">Доступ к юридической поддержке 24/7</h3>
-        <p class="mb-4">После регистрации вы получите доступ к личному кабинету, где сможете:</p>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary p-2 d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                        <i data-feather="message-square" class="text-white" style="width: 20px; height: 20px;"></i>
-                    </div>
-                    <div>Создавать консультации</div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary p-2 d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                        <i data-feather="file-text" class="text-white" style="width: 20px; height: 20px;"></i>
-                    </div>
-                    <div>Управлять документами</div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary p-2 d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                        <i data-feather="calendar" class="text-white" style="width: 20px; height: 20px;"></i>
-                    </div>
-                    <div>Планировать встречи</div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary p-2 d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                        <i data-feather="credit-card" class="text-white" style="width: 20px; height: 20px;"></i>
-                    </div>
-                    <div>Отслеживать биллинг</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-5">
-    <div class="col-12 text-center">
-        <h2 class="fw-bold mb-4">Готовы начать работу?</h2>
-        <p class="lead mb-4">Зарегистрируйтесь сейчас и получите доступ к юридической поддержке</p>
-        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 py-2">
-            <i data-feather="user-plus" class="feather-sm me-1"></i> Регистрация
-        </a>
     </div>
 </div>
 {% endblock %}

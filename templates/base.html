@@ -13,7 +13,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary-subtle rounded-bottom shadow-sm">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-                <i data-feather="shield" class="me-2"></i> <span class="no-wrap">Решение есть. Консалтинг</span>
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип" class="me-2" style="height: 35px;"> 
+                <span class="no-wrap">Решение есть. Консалтинг</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -114,19 +115,9 @@
                                 <i data-feather="user" class="me-1"></i> <span class="no-wrap">{{ current_user.full_name }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow">
-                                {% if current_user.is_client %}
-                                <li><a class="dropdown-item d-flex align-items-center" href="{{ url_for('client_profile') }}">
+                                <li><a class="dropdown-item d-flex align-items-center" href="#">
                                     <i data-feather="user" class="feather-sm me-2"></i> Профиль
                                 </a></li>
-                                {% elif current_user.is_lawyer %}
-                                <li><a class="dropdown-item d-flex align-items-center" href="{{ url_for('lawyer_profile') }}">
-                                    <i data-feather="user" class="feather-sm me-2"></i> Профиль
-                                </a></li>
-                                {% elif current_user.is_manager %}
-                                <li><a class="dropdown-item d-flex align-items-center" href="{{ url_for('manager_profile') }}">
-                                    <i data-feather="user" class="feather-sm me-2"></i> Профиль
-                                </a></li>
-                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item d-flex align-items-center" href="{{ url_for('logout') }}">
                                     <i data-feather="log-out" class="feather-sm me-2"></i> Выйти
@@ -169,7 +160,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <h5 class="d-flex align-items-center">
-                        <i data-feather="shield" class="me-2"></i> Решение есть. Консалтинг
+                        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип" class="me-2" style="height: 30px;"> Решение есть. Консалтинг
                     </h5>
                     <p>Юридическая консалтинговая компания</p>
                 </div>
