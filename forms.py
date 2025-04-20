@@ -24,11 +24,16 @@ class RegisterForm(FlaskForm):
 
 # Форма профиля клиента
 class ClientProfileForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    first_name = StringField('Имя', validators=[DataRequired()])
-    last_name = StringField('Фамилия', validators=[DataRequired()])
     phone = StringField('Телефон', validators=[Optional()])
-    company_name = StringField('Название компании', validators=[Optional()])
+    current_password = PasswordField('Текущий пароль', validators=[Optional()])
+    new_password = PasswordField('Новый пароль', validators=[
+        Optional(),
+        Length(min=6, message='Пароль должен содержать не менее 6 символов')
+    ])
+    confirm_password = PasswordField('Повторите новый пароль', validators=[
+        Optional(),
+        EqualTo('new_password', message='Пароли должны совпадать')
+    ])
 
 # Форма профиля юриста
 class LawyerProfileForm(FlaskForm):

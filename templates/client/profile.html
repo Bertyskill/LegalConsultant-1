@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Мой профиль | ЮрКонсалт{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="mb-0">Мой профиль</h1>
+            <p class="text-muted">Персональная информация</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Личные данные</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i data-feather="user" class="me-3 text-primary"></i>
+                                <div>
+                                    <small class="text-muted d-block">Имя</small>
+                                    <strong>{{ client.user.first_name }} {{ client.user.last_name }}</strong>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i data-feather="mail" class="me-3 text-primary"></i>
+                                <div>
+                                    <small class="text-muted d-block">Email</small>
+                                    <strong>{{ client.user.email }}</strong>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i data-feather="briefcase" class="me-3 text-primary"></i>
+                                <div>
+                                    <small class="text-muted d-block">Компания</small>
+                                    <strong>{{ client.company_name or "Не указана" }}</strong>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i data-feather="calendar" class="me-3 text-primary"></i>
+                                <div>
+                                    <small class="text-muted d-block">Дата регистрации</small>
+                                    <strong>{{ client.user.created_at.strftime('%d.%m.%Y') }}</strong>
+                                </div>
+                            </div>
+                        </li>
+                        {% if contract %}
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i data-feather="file-text" class="me-3 text-primary"></i>
+                                <div>
+                                    <small class="text-muted d-block">Договор</small>
+                                    <strong>{{ contract.contract_number }}</strong>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i data-feather="clock" class="me-3 text-primary"></i>
+                                <div>
+                                    <small class="text-muted d-block">Ежемесячный лимит</small>
+                                    <strong>{{ contract.monthly_hours }} ч.</strong>
+                                </div>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            
+            {% if contract %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Статистика</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Использовано часов (месяц)</span>
+                            <span>{{ month_hours }} / {{ contract.monthly_hours }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: {{ (month_hours / contract.monthly_hours * 100) if contract.monthly_hours > 0 else 0 }}%" 
+                                aria-valuenow="{{ month_hours }}" aria-valuemin="0" aria-valuemax="{{ contract.monthly_hours }}"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end border-secondary-subtle">
+                                <h5 class="mb-0">{{ total_consultations }}</h5>
+                                <small class="text-muted">Консультаций</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div>
+                                <h5 class="mb-0">{{ total_hours }}</h5>
+                                <small class="text-muted">Всего часов</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Редактирование профиля</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('client_profile') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Телефон</label>
+                            {{ form.phone(class="form-control", id="phone", placeholder="Введите номер телефона") }}
+                            {% for error in form.phone.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Изменение пароля</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="current_password" class="form-label">Текущий пароль</label>
+                                    {{ form.current_password(class="form-control", id="current_password") }}
+                                    {% for error in form.current_password.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="new_password" class="form-label">Новый пароль</label>
+                                    {{ form.new_password(class="form-control", id="new_password") }}
+                                    {% for error in form.new_password.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="confirm_password" class="form-label">Повторите новый пароль</label>
+                                    {{ form.confirm_password(class="form-control", id="confirm_password") }}
+                                    {% for error in form.confirm_password.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <small class="text-muted">Оставьте поля пустыми, если не хотите менять пароль.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('client_dashboard') }}" class="btn btn-outline-secondary">
+                                <i data-feather="arrow-left" class="me-1"></i> Вернуться
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="save" class="me-1"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

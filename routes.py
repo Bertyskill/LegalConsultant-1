@@ -127,6 +127,69 @@ def register_routes(app):
             remaining_hours=active_contract.monthly_hours - used_hours if active_contract else 0,
             recent_consultations=recent_consultations
         )
+        
+    @app.route('/client/profile', methods=['GET', 'POST'])
+    @login_required
+    def client_profile():
+        if not current_user.is_client:
+            abort(403)
+            
+        client = current_user.client_profile
+        if not client:
+            flash('Профиль клиента не найден', 'warning')
+            return redirect(url_for('index'))
+            
+        form = ClientProfileForm()
+        
+        if request.method == 'GET':
+            # Заполняем форму текущими данными
+            form.phone.data = current_user.phone
+            
+        if form.validate_on_submit():
+            # Обновляем телефон
+            current_user.phone = form.phone.data
+            
+            # Если указан текущий пароль и новый пароль, меняем пароль
+            if form.current_password.data and form.new_password.data:
+                if current_user.check_password(form.current_password.data):
+                    current_user.set_password(form.new_password.data)
+                    flash('Пароль успешно изменен', 'success')
+                else:
+                    flash('Неверный текущий пароль', 'danger')
+                    return redirect(url_for('client_profile'))
+            
+            db.session.commit()
+            flash('Профиль успешно обновлен', 'success')
+            return redirect(url_for('client_profile'))
+            
+        # Получаем активный договор
+        active_contract = Contract.query.filter_by(
+            client_id=client.id, 
+            status='активный'
+        ).first()
+        
+        # Статистика использования времени
+        current_month = date.today().replace(day=1)
+        month_billing = BillingEntry.query.filter(
+            BillingEntry.client_id == client.id,
+            BillingEntry.date >= current_month
+        ).all()
+        
+        month_hours = sum(entry.hours for entry in month_billing)
+        
+        # Общее количество часов и консультаций
+        total_hours = sum([entry.hours for entry in BillingEntry.query.filter_by(client_id=client.id).all()])
+        total_consultations = Consultation.query.filter_by(client_id=client.id).count()
+        
+        return render_template(
+            'client/profile.html',
+            client=client,
+            form=form,
+            contract=active_contract,
+            month_hours=month_hours,
+            total_hours=total_hours,
+            total_consultations=total_consultations
+        )
 
     @app.route('/client/billing')
     @login_required
@@ -322,6 +385,8 @@ def register_routes(app):
             return redirect(url_for('index'))
             
         form = MessageForm()
+        consultation_id = None
+        
         if form.validate_on_submit():
             consultation_id = form.consultation_id.data
             consultation = Consultation.query.get_or_404(consultation_id)
@@ -344,7 +409,12 @@ def register_routes(app):
             
             flash('Сообщение отправлено', 'success')
             
-        return redirect(url_for('client_consultation_detail', id=consultation_id))
+        if consultation_id:
+            return redirect(url_for('client_consultation_detail', id=consultation_id))
+        else:
+            # Если ID консультации не определен, перенаправляем на список консультаций
+            flash('Не удалось отправить сообщение. Попробуйте еще раз.', 'warning')
+            return redirect(url_for('client_consultations'))
 
     # Маршруты для юристов
     @app.route('/lawyer/dashboard')
@@ -520,6 +590,8 @@ def register_routes(app):
             return redirect(url_for('index'))
             
         form = MessageForm()
+        consultation_id = None
+        
         if form.validate_on_submit():
             consultation_id = form.consultation_id.data
             consultation = Consultation.query.get_or_404(consultation_id)
@@ -542,7 +614,12 @@ def register_routes(app):
             
             flash('Сообщение отправлено', 'success')
             
-        return redirect(url_for('lawyer_consultation_detail', id=consultation_id))
+        if consultation_id:
+            return redirect(url_for('lawyer_consultation_detail', id=consultation_id))
+        else:
+            # Если ID консультации не определен, перенаправляем на список консультаций
+            flash('Не удалось отправить сообщение. Попробуйте еще раз.', 'warning')
+            return redirect(url_for('lawyer_consultations'))
 
     @app.route('/lawyer/billing/add', methods=['POST'])
     @login_required
@@ -556,6 +633,8 @@ def register_routes(app):
             return redirect(url_for('index'))
             
         form = BillingEntryForm()
+        consultation_id = None
+        
         if form.validate_on_submit():
             consultation_id = form.consultation_id.data
             consultation = Consultation.query.get_or_404(consultation_id)
@@ -593,7 +672,12 @@ def register_routes(app):
             
             flash(f'Учтено {form.hours.data} часов работы', 'success')
             
-        return redirect(url_for('lawyer_consultation_detail', id=consultation_id))
+        if consultation_id:
+            return redirect(url_for('lawyer_consultation_detail', id=consultation_id))
+        else:
+            # Если ID консультации не определен, перенаправляем на список консультаций
+            flash('Не удалось добавить запись биллинга. Попробуйте еще раз.', 'warning')
+            return redirect(url_for('lawyer_consultations'))
 
     @app.route('/lawyer/calendar')
     @login_required
