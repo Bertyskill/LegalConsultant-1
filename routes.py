@@ -72,7 +72,10 @@ def register_routes(app):
             db.session.commit()
             
             # Создание профиля клиента
-            client_profile = ClientProfile(user_id=user.id)
+            client_profile = ClientProfile(
+                user_id=user.id,
+                company_name=form.company_name.data
+            )
             db.session.add(client_profile)
             db.session.commit()
             

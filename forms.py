@@ -20,6 +20,7 @@ class RegisterForm(FlaskForm):
     first_name = StringField('Имя', validators=[DataRequired()])
     last_name = StringField('Фамилия', validators=[DataRequired()])
     phone = StringField('Телефон', validators=[Optional()])
+    company_name = StringField('Название компании', validators=[Optional()])
 
 # Форма профиля клиента
 class ClientProfileForm(FlaskForm):
