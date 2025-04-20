@@ -533,12 +533,24 @@ def register_routes(app):
         status = request.args.get('status', 'all')
         
         # Формируем запрос
-        query = Consultation.query.filter_by(lawyer_id=lawyer.id)
+        # Получаем консультации, назначенные юристу
+        assigned_query = Consultation.query.filter_by(lawyer_id=lawyer.id)
         
-        if status != 'all':
-            query = query.filter_by(status=status)
-            
-        consultations = query.order_by(Consultation.updated_at.desc()).all()
+        # Получаем открытые консультации, доступные для взятия в работу
+        open_query = Consultation.query.filter_by(status='открыта', lawyer_id=None)
+        
+        # Объединяем запросы или применяем фильтр
+        if status == 'all':
+            # Все консультации (назначенные + открытые)
+            consultations = assigned_query.all() + open_query.all()
+            # Сортируем по дате обновления
+            consultations.sort(key=lambda x: x.updated_at, reverse=True)
+        elif status == 'открыта':
+            # Только открытые консультации
+            consultations = open_query.order_by(Consultation.updated_at.desc()).all()
+        else:
+            # Фильтруем по указанному статусу среди назначенных
+            consultations = assigned_query.filter_by(status=status).order_by(Consultation.updated_at.desc()).all()
         
         return render_template(
             'lawyer/consultations.html',
