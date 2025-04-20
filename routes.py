@@ -617,6 +617,40 @@ def register_routes(app):
         
         flash('Консультация взята в работу', 'success')
         return redirect(url_for('lawyer_consultation_detail', id=id))
+        
+    @app.route('/lawyer/consultation/update_response/<int:id>', methods=['POST'])
+    @login_required
+    def lawyer_update_response(id):
+        if not current_user.is_lawyer and not current_user.is_manager:
+            abort(403)
+            
+        lawyer = current_user.lawyer_profile
+        if not lawyer and current_user.is_lawyer:
+            flash('Профиль юриста не найден', 'warning')
+            return redirect(url_for('index'))
+            
+        consultation = Consultation.query.get_or_404(id)
+        
+        # Проверяем, что консультация в работе и назначена текущему юристу
+        if consultation.status != 'в работе':
+            flash('Консультация не находится в работе', 'warning')
+            return redirect(url_for('lawyer_consultation_detail', id=id))
+        
+        if current_user.is_lawyer and consultation.lawyer_id != lawyer.id:
+            flash('Вы не назначены на эту консультацию', 'danger')
+            return redirect(url_for('lawyer_consultations'))
+        
+        # Обновляем ответ на консультацию
+        response = request.form.get('response')
+        if response:
+            consultation.response = response
+            consultation.updated_at = datetime.now()
+            db.session.commit()
+            flash('Ответ на консультацию сохранен', 'success')
+        else:
+            flash('Ответ не может быть пустым', 'warning')
+            
+        return redirect(url_for('lawyer_consultation_detail', id=id))
 
     @app.route('/lawyer/message/add', methods=['POST'])
     @login_required
