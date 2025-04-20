@@ -1,4 +1,9 @@
 /* Основные стили */
+:root {
+    --border-radius: 10px;
+    --transition-speed: 0.25s;
+}
+
 body {
     min-height: 100vh;
     display: flex;
@@ -13,9 +18,16 @@ footer {
     margin-top: auto;
 }
 
+/* Улучшенный дизайн */
+.card, .btn, .form-control, .form-select, .input-group, .dropdown-menu, 
+.alert, .modal-content, .badge, .list-group, .list-group-item:first-child, 
+.list-group-item:last-child, .nav-pills .nav-link, .toast {
+    border-radius: var(--border-radius) !important;
+}
+
 /* Стили для навигации */
 .navbar-brand {
-    font-weight: bold;
+    font-weight: 600;
     display: flex;
     align-items: center;
 }
@@ -24,44 +36,126 @@ footer {
     margin-right: 8px;
 }
 
+.nav-link {
+    white-space: nowrap;
+}
+
 /* Стили для карточек */
 .card {
-    transition: all 0.3s ease;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    font-weight: 600;
+    border-bottom: none;
 }
 
 /* Стили для сообщений в консультациях */
 .message-thread {
     max-height: 500px;
     overflow-y: auto;
+    padding-right: 10px;
 }
 
-.message-from-me .message-content {
-    background-color: var(--bs-primary);
-    color: white;
+.message-thread::-webkit-scrollbar {
+    width: 6px;
+}
+
+.message-thread::-webkit-scrollbar-track {
+    background: rgba(var(--bs-dark-rgb), 0.1);
+    border-radius: 10px;
+}
+
+.message-thread::-webkit-scrollbar-thumb {
+    background: rgba(var(--bs-primary-rgb), 0.5);
+    border-radius: 10px;
 }
 
 .message-content {
+    border-radius: var(--border-radius);
+    padding: 12px 18px;
     word-break: break-word;
+    position: relative;
+    margin-bottom: 15px;
 }
 
-/* Стили для статусов */
-.badge {
-    font-weight: 500;
+.message-from-me .message-content {
+    background-color: rgba(var(--bs-primary-rgb), 0.8);
+    color: white;
+}
+
+.message-from-other .message-content {
+    background-color: rgba(var(--bs-dark-rgb), 0.15);
 }
 
 /* Стили для форм */
 .form-label {
     font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    padding: 0.6rem 1rem;
+    border: none;
+    background-color: rgba(var(--bs-dark-rgb), 0.07);
+    transition: all var(--transition-speed);
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    background-color: rgba(var(--bs-dark-rgb), 0.05);
+}
+
+/* Кнопки с улучшенным дизайном */
+.btn {
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-info {
+    color: white;
+}
+
+/* Значки статусов */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
 }
 
 /* Стили для списков */
+.list-group {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
 .list-group-item {
-    transition: background-color 0.2s;
+    border-left: none;
+    border-right: none;
+    transition: all var(--transition-speed);
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
 }
 
 .list-group-item:hover {
@@ -74,9 +168,25 @@ footer {
     height: 16px;
 }
 
+.feather-md {
+    width: 24px;
+    height: 24px;
+}
+
+.feather-lg {
+    width: 32px;
+    height: 32px;
+}
+
+/* Предотвращение переносов текста */
+.no-wrap {
+    white-space: nowrap;
+}
+
 /* Статистика на дашборде */
 .stat-card {
-    transition: all 0.3s;
+    transition: all var(--transition-speed);
+    border-left: 4px solid var(--bs-primary);
 }
 
 .stat-card:hover {
@@ -86,5 +196,46 @@ footer {
 .stat-icon {
     width: 48px;
     height: 48px;
-    opacity: 0.7;
+    opacity: 0.8;
+}
+
+/* Скрытие/показ пароля */
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--bs-body-color);
+}
+
+.password-field {
+    position: relative;
+}
+
+/* Пользовательский выбор */
+.custom-radio-card {
+    cursor: pointer;
+}
+
+.custom-radio-card .card {
+    transition: all var(--transition-speed);
+    border: 2px solid transparent;
+}
+
+.custom-radio-card input[type="radio"]:checked + .card {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Анимированные элементы */
+.animate-hover {
+    transition: all var(--transition-speed);
+}
+
+.animate-hover:hover {
+    transform: translateY(-3px);
 }

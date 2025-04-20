@@ -1,75 +1,120 @@
 {% extends "base.html" %}
 
-{% block title %}Регистрация | ЮрКонсалт{% endblock %}
+{% block title %}Регистрация | Решение есть. Консалтинг{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
         <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Регистрация клиента</h4>
+            <div class="card-header bg-primary-subtle">
+                <h4 class="mb-0 d-flex align-items-center">
+                    <i data-feather="user-plus" class="me-2"></i> Регистрация клиента
+                </h4>
             </div>
             <div class="card-body">
+                <p class="text-muted mb-4">Зарегистрируйтесь, чтобы получить доступ к юридическим консультациям от профессионалов компании «Решение есть. Консалтинг»</p>
+                
                 <form method="POST" action="{{ url_for('register') }}">
                     {{ form.hidden_tag() }}
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="first_name" class="form-label">Имя</label>
-                            {{ form.first_name(class="form-control", id="first_name", placeholder="Введите имя") }}
+                            <div class="input-group">
+                                <span class="input-group-text"><i data-feather="user" class="feather-sm"></i></span>
+                                {{ form.first_name(class="form-control", id="first_name", placeholder="Введите имя") }}
+                            </div>
                             {% for error in form.first_name.errors %}
-                                <div class="text-danger">{{ error }}</div>
+                                <div class="text-danger small mt-1">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
                             <label for="last_name" class="form-label">Фамилия</label>
-                            {{ form.last_name(class="form-control", id="last_name", placeholder="Введите фамилию") }}
+                            <div class="input-group">
+                                <span class="input-group-text"><i data-feather="user" class="feather-sm"></i></span>
+                                {{ form.last_name(class="form-control", id="last_name", placeholder="Введите фамилию") }}
+                            </div>
                             {% for error in form.last_name.errors %}
-                                <div class="text-danger">{{ error }}</div>
+                                <div class="text-danger small mt-1">{{ error }}</div>
                             {% endfor %}
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        {{ form.email(class="form-control", id="email", placeholder="Введите email") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i data-feather="mail" class="feather-sm"></i></span>
+                            {{ form.email(class="form-control", id="email", placeholder="email@example.com") }}
+                        </div>
                         {% for error in form.email.errors %}
-                            <div class="text-danger">{{ error }}</div>
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">Название компании</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i data-feather="briefcase" class="feather-sm"></i></span>
+                            {{ form.company_name(class="form-control", id="company_name", placeholder="Название вашей компании") }}
+                        </div>
+                        {% for error in form.company_name.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
                     
                     <div class="mb-3">
                         <label for="phone" class="form-label">Телефон</label>
-                        {{ form.phone(class="form-control", id="phone", placeholder="Введите телефон") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i data-feather="phone" class="feather-sm"></i></span>
+                            {{ form.phone(class="form-control", id="phone", placeholder="+7 (999) 123-45-67") }}
+                        </div>
                         {% for error in form.phone.errors %}
-                            <div class="text-danger">{{ error }}</div>
+                            <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
                     
-                    <div class="row mb-3">
+                    <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="password" class="form-label">Пароль</label>
-                            {{ form.password(class="form-control", id="password", placeholder="Введите пароль") }}
-                            {% for error in form.password.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
+                            <div class="password-field">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i data-feather="lock" class="feather-sm"></i></span>
+                                    {{ form.password(class="form-control", id="password", placeholder="Минимум 6 символов") }}
+                                    <button type="button" class="password-toggle" tabindex="-1">
+                                        <i data-feather="eye" class="feather-sm"></i>
+                                    </button>
+                                </div>
+                                {% for error in form.password.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label for="password2" class="form-label">Подтверждение пароля</label>
-                            {{ form.password2(class="form-control", id="password2", placeholder="Повторите пароль") }}
-                            {% for error in form.password2.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
+                            <div class="password-field">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i data-feather="lock" class="feather-sm"></i></span>
+                                    {{ form.password2(class="form-control", id="password2", placeholder="Повторите пароль") }}
+                                    <button type="button" class="password-toggle" tabindex="-1">
+                                        <i data-feather="eye" class="feather-sm"></i>
+                                    </button>
+                                </div>
+                                {% for error in form.password2.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="user-check" class="feather-sm me-1"></i> Зарегистрироваться
+                        </button>
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center">
-                <div>Уже есть учетная запись? <a href="{{ url_for('login') }}">Войти</a></div>
+                <div>Уже есть учетная запись? <a href="{{ url_for('login') }}" class="link-primary">Войти</a></div>
             </div>
         </div>
     </div>

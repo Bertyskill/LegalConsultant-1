@@ -1,46 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Вход в систему | ЮрКонсалт{% endblock %}
+{% block title %}Вход в систему | Решение есть. Консалтинг{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
         <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Вход в систему</h4>
+            <div class="card-header bg-primary-subtle">
+                <h4 class="mb-0 d-flex align-items-center">
+                    <i data-feather="log-in" class="me-2"></i> Вход в систему
+                </h4>
             </div>
             <div class="card-body">
+                <p class="text-muted mb-4">Войдите в систему, чтобы получить доступ к юридическим консультациям и документам</p>
+                
                 <form method="POST" action="{{ url_for('login') }}">
                     {{ form.hidden_tag() }}
                     
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        {{ form.email(class="form-control", id="email", placeholder="Введите email") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i data-feather="mail" class="feather-sm"></i></span>
+                            {{ form.email(class="form-control", id="email", placeholder="email@example.com") }}
+                        </div>
                         {% for error in form.email.errors %}
-                            <div class="text-danger">{{ error }}</div>
+                            <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label for="password" class="form-label">Пароль</label>
-                        {{ form.password(class="form-control", id="password", placeholder="Введите пароль") }}
-                        {% for error in form.password.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
+                        <div class="password-field">
+                            <div class="input-group">
+                                <span class="input-group-text"><i data-feather="lock" class="feather-sm"></i></span>
+                                {{ form.password(class="form-control", id="password", placeholder="Введите пароль") }}
+                                <button type="button" class="password-toggle" tabindex="-1">
+                                    <i data-feather="eye" class="feather-sm"></i>
+                                </button>
+                            </div>
+                            {% for error in form.password.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
                     
-                    <div class="mb-3 form-check">
-                        {{ form.remember_me(class="form-check-input", id="rememberMe") }}
-                        <label class="form-check-label" for="rememberMe">Запомнить меня</label>
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <div class="form-check">
+                                {{ form.remember_me(class="form-check-input", id="rememberMe") }}
+                                <label class="form-check-label" for="rememberMe">Запомнить меня</label>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a href="#" class="link-primary">Забыли пароль?</a>
+                        </div>
                     </div>
                     
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Войти</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="log-in" class="feather-sm me-1"></i> Войти
+                        </button>
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center">
-                <div>Нет учетной записи? <a href="{{ url_for('register') }}">Зарегистрироваться</a></div>
+                <div>Нет учетной записи? <a href="{{ url_for('register') }}" class="link-primary">Зарегистрироваться</a></div>
             </div>
         </div>
     </div>
