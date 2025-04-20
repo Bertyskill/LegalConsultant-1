@@ -180,8 +180,9 @@ class Contract(db.Model):
     contract_number = db.Column(db.String(50), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date)
+    payment_type = db.Column(db.String(20), default='hourly')  # 'hourly' или 'subscription'
     hourly_rate = db.Column(db.Float, nullable=False)
-    monthly_hours = db.Column(db.Float, nullable=False)
+    monthly_hours = db.Column(db.Float)  # Необязательно для почасовой оплаты
     terms = db.Column(db.Text)
     status = db.Column(db.String(50), default='активный')
     created_at = db.Column(db.DateTime, default=datetime.now)

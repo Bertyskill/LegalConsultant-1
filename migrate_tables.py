@@ -37,6 +37,29 @@ def run_migrations():
             else:
                 print(f"Ошибка при добавлении колонки is_clarification: {e}")
             db.session.rollback()
+            
+        # Добавляем колонку payment_type в таблицу contract
+        try:
+            print("Добавляем колонку payment_type в таблицу contract...")
+            db.session.execute(text("ALTER TABLE contract ADD COLUMN payment_type VARCHAR(20) DEFAULT 'hourly'"))
+            db.session.commit()
+            print("Колонка payment_type успешно добавлена")
+        except Exception as e:
+            if "already exists" in str(e):
+                print("Колонка payment_type уже существует")
+            else:
+                print(f"Ошибка при добавлении колонки payment_type: {e}")
+            db.session.rollback()
+            
+        # Делаем nullable колонку monthly_hours в таблице contract
+        try:
+            print("Изменяем колонку monthly_hours в таблице contract на nullable...")
+            db.session.execute(text("ALTER TABLE contract ALTER COLUMN monthly_hours DROP NOT NULL"))
+            db.session.commit()
+            print("Колонка monthly_hours успешно изменена")
+        except Exception as e:
+            print(f"Ошибка при изменении колонки monthly_hours: {e}")
+            db.session.rollback()
                 
         print("Миграции успешно выполнены")
 
