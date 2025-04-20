@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 
 from app import db
-from models import User, ClientProfile, Consultation, Message, LegalTopic, LegalCategory
+from models import User, ClientProfile, Consultation, Message, LegalCategory
 
 # Настройка логирования
 logging.basicConfig(level=logging.DEBUG)
@@ -202,35 +202,22 @@ def process_incoming_emails():
                 # Создаем новую консультацию
                 # Определяем категорию и тему
                 category_name = subject_info.get('category')
-                topic_name = subject_info.get('topic')
+                topic_name = subject_info.get('topic', 'Общая консультация')
                 
                 category = None
-                topic = None
                 
                 if category_name:
                     category = LegalCategory.query.filter(LegalCategory.name.ilike(f"%{category_name}%")).first()
-                    
-                if topic_name and category:
-                    topic = LegalTopic.query.filter(
-                        LegalTopic.name.ilike(f"%{topic_name}%"),
-                        LegalTopic.category_id == category.id
-                    ).first()
-                elif topic_name:
-                    topic = LegalTopic.query.filter(LegalTopic.name.ilike(f"%{topic_name}%")).first()
                 
-                # Если категория или тема не найдены, берем первые из базы
+                # Если категория не найдена, берем первую из базы
                 if not category:
                     category = LegalCategory.query.first()
-                    
-                if not topic and category:
-                    topic = LegalTopic.query.filter_by(category_id=category.id).first()
-                elif not topic:
-                    topic = LegalTopic.query.first()
                 
                 # Создаем новую консультацию
                 consultation = Consultation(
                     client_id=client_profile.id,
-                    topic_id=topic.id if topic else None,
+                    category_id=category.id if category else None,
+                    topic=topic_name,
                     title=subject,
                     request=body,
                     status='новая'

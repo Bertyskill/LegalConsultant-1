@@ -97,31 +97,22 @@ class LawyerProfile(db.Model):
     # Связь с консультациями
     consultations = db.relationship('Consultation', backref='lawyer')
 
-# Категории права
+# Отрасли права
 class LegalCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
     
-    # Связь с темами
-    topics = db.relationship('LegalTopic', backref='category')
-
-# Правовые темы
-class LegalTopic(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    category_id = db.Column(db.Integer, db.ForeignKey('legal_category.id'))
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    
-    # Связь с консультациями
-    consultations = db.relationship('Consultation', backref='topic')
+    # Консультации по отрасли права
+    consultations = db.relationship('Consultation', backref='category')
 
 # Консультации
 class Consultation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(db.Integer, db.ForeignKey('client_profile.id'))
     lawyer_id = db.Column(db.Integer, db.ForeignKey('lawyer_profile.id'))
-    topic_id = db.Column(db.Integer, db.ForeignKey('legal_topic.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('legal_category.id'))
+    topic = db.Column(db.String(100), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     request = db.Column(db.Text, nullable=False)
     response = db.Column(db.Text)

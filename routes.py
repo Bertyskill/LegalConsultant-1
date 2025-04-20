@@ -7,7 +7,7 @@ import json
 
 from app import db
 from models import (User, UserRole, ClientProfile, LawyerProfile, 
-                   LegalCategory, LegalTopic, Consultation, Document, 
+                   LegalCategory, Consultation, Document, 
                    Task, Contract, BillingEntry, CalendarEvent, Message,
                    Newsletter)
 from forms import (LoginForm, RegisterForm, ClientProfileForm, LawyerProfileForm, 
@@ -208,17 +208,15 @@ def register_routes(app):
         
         # Фильтрация по категории (если указана)
         category_id = request.args.get('category_id', type=int)
-        topic_id = request.args.get('topic_id', type=int)
+        topic = request.args.get('topic')
         
         # Формируем запрос
         query = Consultation.query.filter_by(client_id=client.id)
         
-        if topic_id:
-            query = query.filter_by(topic_id=topic_id)
+        if topic:
+            query = query.filter(Consultation.topic == topic)
         elif category_id:
-            topic_ids = [t.id for t in LegalTopic.query.filter_by(category_id=category_id).all()]
-            if topic_ids:
-                query = query.filter(Consultation.topic_id.in_(topic_ids))
+            query = query.filter_by(category_id=category_id)
         
         consultations = query.order_by(Consultation.updated_at.desc()).all()
         
@@ -228,7 +226,7 @@ def register_routes(app):
             consultations=consultations,
             categories=categories,
             selected_category=category_id,
-            selected_topic=topic_id
+            selected_topic=topic
         )
 
     @app.route('/client/consultations/<int:id>')
@@ -275,21 +273,19 @@ def register_routes(app):
             
         form = ConsultationForm()
         
-        # Заполняем выпадающие списки категорий и тем
+        # Заполняем выпадающие списки отраслей права
         categories = LegalCategory.query.all()
         form.category_id.choices = [(c.id, c.name) for c in categories]
         
-        # Если выбрана категория, заполняем список тем
-        if form.category_id.data:
-            topics = LegalTopic.query.filter_by(category_id=form.category_id.data).all()
-            form.topic_id.choices = [(t.id, t.name) for t in topics]
-        else:
-            form.topic_id.choices = []
+        # Получаем все уникальные темы из существующих консультаций
+        existing_topics = db.session.query(Consultation.topic).distinct().all()
+        existing_topics = [topic[0] for topic in existing_topics if topic[0]]
         
         if form.validate_on_submit():
             consultation = Consultation(
                 client_id=client.id,
-                topic_id=form.topic_id.data,
+                category_id=form.category_id.data,
+                topic=form.topic.data,
                 title=form.title.data,
                 request=form.request.data,
                 status='новая'
@@ -308,8 +304,9 @@ def register_routes(app):
 
     @app.route('/get_topics/<int:category_id>')
     def get_topics(category_id):
-        topics = LegalTopic.query.filter_by(category_id=category_id).all()
-        topic_list = [{'id': t.id, 'name': t.name} for t in topics]
+        # Получаем все уникальные темы из существующих консультаций по выбранной категории
+        topics = db.session.query(Consultation.topic).filter_by(category_id=category_id).distinct().all()
+        topic_list = [{'id': i, 'name': t[0]} for i, t in enumerate(topics, 1) if t[0]]
         return jsonify(topic_list)
 
     @app.route('/client/message/add', methods=['POST'])

@@ -52,8 +52,8 @@ class LawyerProfileForm(FlaskForm):
 
 # Форма создания/редактирования консультации
 class ConsultationForm(FlaskForm):
-    category_id = SelectField('Категория права', coerce=int, validators=[DataRequired()])
-    topic_id = SelectField('Тема', coerce=int, validators=[DataRequired()])
+    category_id = SelectField('Отрасль права', coerce=int, validators=[DataRequired()])
+    topic = StringField('Тема', validators=[DataRequired()])
     title = StringField('Заголовок', validators=[DataRequired()])
     request = TextAreaField('Запрос', validators=[DataRequired()])
 
