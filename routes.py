@@ -278,7 +278,7 @@ def register_routes(app):
         form.category_id.choices = [(c.id, c.name) for c in categories]
         
         # Получаем все уникальные темы из существующих консультаций
-        existing_topics = db.session.query(Consultation.topic).distinct().all()
+        existing_topics = db.session.query(Consultation.topic).filter_by(category_id=form.category_id.data).distinct().all() if form.category_id.data else []
         existing_topics = [topic[0] for topic in existing_topics if topic[0]]
         
         if form.validate_on_submit():
@@ -299,7 +299,8 @@ def register_routes(app):
         return render_template(
             'client/new_consultation.html',
             client=client,
-            form=form
+            form=form,
+            existing_topics=existing_topics
         )
 
     @app.route('/get_topics/<int:category_id>')

@@ -28,16 +28,21 @@
             
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="category_id" class="form-label">Категория права</label>
+                    <label for="category_id" class="form-label">Отрасль права</label>
                     {{ form.category_id(class="form-control", id="category_id") }}
                     {% for error in form.category_id.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                 </div>
                 <div class="col-md-6">
-                    <label for="topic_id" class="form-label">Тема</label>
-                    {{ form.topic_id(class="form-control", id="topic_id") }}
-                    {% for error in form.topic_id.errors %}
+                    <label for="topic" class="form-label">Тема</label>
+                    {{ form.topic(class="form-control", id="topic", list="topic-suggestions") }}
+                    <datalist id="topic-suggestions">
+                        {% for topic in existing_topics %}
+                            <option value="{{ topic }}">
+                        {% endfor %}
+                    </datalist>
+                    {% for error in form.topic.errors %}
                         <div class="text-danger">{{ error }}</div>
                     {% endfor %}
                 </div>
@@ -83,13 +88,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         // Загрузка тем при изменении категории
         const categorySelect = document.getElementById('category_id');
-        const topicSelect = document.getElementById('topic_id');
+        const topicInput = document.getElementById('topic');
+        const datalist = document.getElementById('topic-suggestions');
         
         categorySelect.addEventListener('change', function() {
             const categoryId = this.value;
             
-            // Очищаем список тем
-            topicSelect.innerHTML = '';
+            // Очищаем список предложений
+            datalist.innerHTML = '';
             
             if (categoryId) {
                 fetch(`/get_topics/${categoryId}`)
@@ -97,9 +103,8 @@
                     .then(data => {
                         data.forEach(topic => {
                             const option = document.createElement('option');
-                            option.value = topic.id;
-                            option.textContent = topic.name;
-                            topicSelect.appendChild(option);
+                            option.value = topic.name;
+                            datalist.appendChild(option);
                         });
                     })
                     .catch(error => {
