@@ -563,11 +563,10 @@ def register_routes(app):
         # Руководитель может просматривать любые консультации
         if current_user.is_manager:
             pass
-        # Проверка для юриста, назначена ли консультация текущему юристу
-        elif consultation.lawyer_id != lawyer.id:
-            # Если консультация никому не назначена, мы показываем ее, но не назначаем автоматически
-            if consultation.lawyer_id is not None:
-                abort(403)
+        # Проверка для юриста, назначена ли консультация текущему юристу или открыта
+        elif consultation.status != 'открыта' and consultation.lawyer_id != lawyer.id:
+            # Если консультация уже в работе и не назначена текущему юристу, запрещаем доступ
+            abort(403)
         
         # Получаем все сообщения консультации
         messages = Message.query.filter_by(consultation_id=consultation.id).order_by(Message.created_at).all()
@@ -1022,7 +1021,8 @@ def register_routes(app):
         client = ClientProfile.query.get_or_404(id)
         user = User.query.get(client.user_id)
         
-        form = ClientProfileForm()
+        # Используем форму для регистрации клиента, так как она содержит все нужные поля
+        form = ClientRegistrationForm()
         
         if request.method == 'GET':
             form.email.data = user.email
