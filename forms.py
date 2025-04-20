@@ -101,6 +101,7 @@ class ContractForm(FlaskForm):
         NumberRange(min=0, message='Количество часов не может быть отрицательным')
     ])
     terms = TextAreaField('Условия договора', validators=[Optional()])
+    document = FileField('Скан договора', validators=[Optional()])
 
 # Форма регистрации биллинга
 class BillingEntryForm(FlaskForm):

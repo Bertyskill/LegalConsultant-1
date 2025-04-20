@@ -1006,6 +1006,34 @@ def register_routes(app):
             db.session.add(new_contract)
             db.session.commit()
             
+            # Обрабатываем загрузку документа, если он предоставлен
+            if form.document.data:
+                file = form.document.data
+                filename = secure_filename(file.filename)
+                
+                # Создаем каталог для документов, если он не существует
+                upload_folder = os.path.join(app.root_path, 'static/uploads/contracts')
+                os.makedirs(upload_folder, exist_ok=True)
+                
+                # Сохраняем файл
+                file_path = os.path.join(upload_folder, filename)
+                file.save(file_path)
+                
+                # Создаем запись о документе
+                document = Document(
+                    filename=filename,
+                    file_path=file_path,
+                    file_type=file.content_type,
+                    file_size=os.path.getsize(file_path),
+                    uploaded_by_id=current_user.id,
+                    description=f'Договор {form.contract_number.data} от {form.start_date.data.strftime("%d.%m.%Y")}'
+                )
+                db.session.add(document)
+                
+                # Привязываем документ к договору
+                new_contract.document_id = document.id
+                db.session.commit()
+            
             flash('Договор успешно создан', 'success')
             return redirect(url_for('manager_client_detail', id=client.id))
             
