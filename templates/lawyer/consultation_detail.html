@@ -98,7 +98,7 @@
                     <div class="mt-4">
                         <h6>Подготовить официальный ответ:</h6>
                         <form id="responseForm" method="POST" action="{{ url_for('lawyer_update_response', id=consultation.id) }}">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            {{ form.hidden_tag() }}
                             <div class="mb-3">
                                 <textarea class="form-control" name="response" rows="6" placeholder="Введите официальный ответ на запрос клиента..."></textarea>
                             </div>

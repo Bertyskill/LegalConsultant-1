@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Flask, redirect, url_for, flash, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -17,6 +18,7 @@ class Base(DeclarativeBase):
 # Инициализация объектов
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 # Создание приложения
 app = Flask(__name__)
@@ -34,6 +36,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Инициализация расширений
 db.init_app(app)
 login_manager.init_app(app)
+csrf.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Пожалуйста, авторизуйтесь для доступа к этой странице.'
 

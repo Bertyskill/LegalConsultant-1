@@ -2,6 +2,7 @@ from datetime import datetime, date
 from flask import render_template, redirect, url_for, flash, request, jsonify, abort, send_file
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
+from flask_wtf import FlaskForm
 import os
 import json
 
@@ -589,13 +590,17 @@ def register_routes(app):
         # Форма для добавления биллинга
         billing_form = BillingEntryForm()
         
+        # Форма для CSRF-защиты (для других форм без WTForms)
+        form = FlaskForm()
+        
         return render_template(
             'lawyer/consultation_detail.html',
             lawyer=lawyer,
             consultation=consultation,
             messages=messages,
             message_form=message_form,
-            billing_form=billing_form
+            billing_form=billing_form,
+            form=form
         )
         
     @app.route('/lawyer/consultation/take/<int:id>', methods=['POST'])
