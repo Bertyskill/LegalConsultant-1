@@ -199,10 +199,12 @@ class BillingEntry(db.Model):
     lawyer_id = db.Column(db.Integer, db.ForeignKey('lawyer_profile.id'))
     hours = db.Column(db.Float, nullable=False)  # Затраченное время в часах
     rate = db.Column(db.Float, nullable=False)  # Стоимость часа
+    service_name = db.Column(db.String(200))  # Наименование услуги
     description = db.Column(db.Text)
     date = db.Column(db.Date, default=datetime.now().date)
     billed = db.Column(db.Boolean, default=False)
     paid = db.Column(db.Boolean, default=False)
+    is_clarification = db.Column(db.Boolean, default=False)  # Является ли уточнением
     
     # Связь с юристом
     lawyer = db.relationship('LawyerProfile', backref='billing_entries')

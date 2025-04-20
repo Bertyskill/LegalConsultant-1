@@ -585,6 +585,37 @@ def register_routes(app):
             message_form=message_form,
             billing_form=billing_form
         )
+        
+    @app.route('/lawyer/consultation/take/<int:id>', methods=['POST'])
+    @login_required
+    def lawyer_take_consultation(id):
+        if not current_user.is_lawyer and not current_user.is_manager:
+            abort(403)
+            
+        lawyer = current_user.lawyer_profile
+        if not lawyer and current_user.is_lawyer:
+            flash('Профиль юриста не найден', 'warning')
+            return redirect(url_for('index'))
+            
+        consultation = Consultation.query.get_or_404(id)
+        
+        # Проверяем, что консультация открыта
+        if consultation.status != 'открыта':
+            flash('Консультация уже взята в работу', 'warning')
+            return redirect(url_for('lawyer_consultation_detail', id=id))
+        
+        # Назначаем юриста/руководителя на консультацию
+        if current_user.is_lawyer:
+            consultation.lawyer_id = lawyer.id
+        
+        consultation.status = 'в работе'
+        consultation.assigned_at = datetime.now()
+        consultation.assigned_by_id = current_user.id
+        
+        db.session.commit()
+        
+        flash('Консультация взята в работу', 'success')
+        return redirect(url_for('lawyer_consultation_detail', id=id))
 
     @app.route('/lawyer/message/add', methods=['POST'])
     @login_required
@@ -662,14 +693,19 @@ def register_routes(app):
                 flash('У клиента нет активного договора', 'warning')
                 return redirect(url_for('lawyer_consultation_detail', id=consultation_id))
                 
+            # Вычисляем ставку в зависимости от того, является ли это уточнением
+            rate = active_contract.hourly_rate if not form.is_clarification.data else 0
+            
             billing_entry = BillingEntry(
                 client_id=client.id,
                 consultation_id=consultation_id,
                 lawyer_id=lawyer.id,
                 hours=form.hours.data,
-                rate=active_contract.hourly_rate,
+                rate=rate,
+                service_name=form.service_name.data,
                 description=form.description.data,
-                date=datetime.now().date()
+                date=datetime.now().date(),
+                is_clarification=form.is_clarification.data
             )
             db.session.add(billing_entry)
             
@@ -771,7 +807,7 @@ def register_routes(app):
             
             # Поиск по консультациям
             consultations = Consultation.query.filter(
-                (Consultation.title.ilike(f'%{query}%')) |
+                (Consultation.topic.ilike(f'%{query}%')) |
                 (Consultation.request.ilike(f'%{query}%')) |
                 (Consultation.response.ilike(f'%{query}%'))
             ).all()
