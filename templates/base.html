@@ -115,9 +115,15 @@
                                 <i data-feather="user" class="me-1"></i> <span class="no-wrap">{{ current_user.full_name }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow">
+                                {% if current_user.is_client %}
+                                <li><a class="dropdown-item d-flex align-items-center" href="{{ url_for('client_profile') }}">
+                                    <i data-feather="user" class="feather-sm me-2"></i> Профиль
+                                </a></li>
+                                {% else %}
                                 <li><a class="dropdown-item d-flex align-items-center" href="#">
                                     <i data-feather="user" class="feather-sm me-2"></i> Профиль
                                 </a></li>
+                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item d-flex align-items-center" href="{{ url_for('logout') }}">
                                     <i data-feather="log-out" class="feather-sm me-2"></i> Выйти

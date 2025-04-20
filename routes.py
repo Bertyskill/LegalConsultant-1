@@ -724,6 +724,14 @@ def register_routes(app):
         clients = [db.session.get(ClientProfile, id) for id in client_ids]
         clients = [c for c in clients if c is not None]
         
+        # Группируем клиентов по компаниям
+        companies = {}
+        for client in clients:
+            company_name = client.company_name or 'Без компании'
+            if company_name not in companies:
+                companies[company_name] = []
+            companies[company_name].append(client)
+        
         # Форма поиска
         search_form = SearchForm()
         
@@ -731,6 +739,7 @@ def register_routes(app):
             'lawyer/client_base.html',
             lawyer=lawyer,
             clients=clients,
+            companies=companies,
             search_form=search_form
         )
 
@@ -826,9 +835,18 @@ def register_routes(app):
         # Получаем всех клиентов
         clients = ClientProfile.query.join(User).order_by(User.last_name).all()
         
+        # Группируем клиентов по компаниям
+        companies = {}
+        for client in clients:
+            company_name = client.company_name or 'Без компании'
+            if company_name not in companies:
+                companies[company_name] = []
+            companies[company_name].append(client)
+        
         return render_template(
             'manager/clients.html',
-            clients=clients
+            clients=clients,
+            companies=companies
         )
 
     @app.route('/manager/client/<int:id>')
