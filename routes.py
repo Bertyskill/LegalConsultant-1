@@ -18,6 +18,14 @@ from email_handler import send_notification_email, process_incoming_emails
 from utils import calculate_monthly_billing, get_client_statistics, get_lawyer_statistics
 
 def register_routes(app):
+    # Добавляем утилиты для шаблонов
+    @app.context_processor
+    def utility_processor():
+        return {
+            'now': datetime.now,
+            'get_recent_newsletters': lambda: Newsletter.query.order_by(Newsletter.sent_at.desc()).limit(5).all()
+        }
+        
     # Главная страница
     @app.route('/')
     def index():

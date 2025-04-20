@@ -120,6 +120,8 @@ class Consultation(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     time_spent = db.Column(db.Float, default=0)  # Затраченное время в часах
+    assigned_at = db.Column(db.DateTime)  # Время взятия в работу
+    assigned_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Кто взял в работу (юрист)
     
     # Связь с документами (многие-ко-многим)
     documents = db.relationship('Document', secondary=consultation_documents, backref='consultations')

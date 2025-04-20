@@ -109,7 +109,9 @@ class BillingEntryForm(FlaskForm):
         DataRequired(),
         NumberRange(min=0.1, message='Минимальное время - 0.1 часа')
     ])
+    service_name = StringField('Наименование услуги', validators=[DataRequired()])
     description = TextAreaField('Описание работы', validators=[DataRequired()])
+    is_clarification = BooleanField('Уточнение (не включать в расчет стоимости)', default=False)
     consultation_id = HiddenField('ID консультации', validators=[DataRequired()])
 
 # Форма создания мероприятия календаря
