@@ -59,7 +59,6 @@ class LawyerProfileForm(FlaskForm):
 class ConsultationForm(FlaskForm):
     category_id = SelectField('Отрасль права', coerce=int, validators=[DataRequired()])
     topic = StringField('Тема', validators=[DataRequired()])
-    title = StringField('Заголовок', validators=[DataRequired()])
     request = TextAreaField('Запрос', validators=[DataRequired()])
 
 # Форма загрузки документа

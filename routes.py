@@ -23,7 +23,9 @@ def register_routes(app):
     def utility_processor():
         return {
             'now': datetime.now,
-            'get_recent_newsletters': lambda: Newsletter.query.order_by(Newsletter.sent_at.desc()).limit(5).all()
+            'get_recent_newsletters': lambda: Newsletter.query.order_by(Newsletter.sent_at.desc()).limit(5).all(),
+            'get_new_consultations': lambda: Consultation.query.filter_by(status='открыта').order_by(Consultation.created_at.desc()).limit(5).all(),
+            'get_assigned_consultations': lambda: Consultation.query.filter_by(status='в работе').order_by(Consultation.updated_at.desc()).limit(5).all()
         }
         
     # Главная страница
@@ -357,9 +359,8 @@ def register_routes(app):
                 client_id=client.id,
                 category_id=form.category_id.data,
                 topic=form.topic.data,
-                title=form.title.data,
                 request=form.request.data,
-                status='новая'
+                status='открыта'
             )
             db.session.add(consultation)
             db.session.commit()
@@ -548,24 +549,23 @@ def register_routes(app):
     @app.route('/lawyer/consultations/<int:id>')
     @login_required
     def lawyer_consultation_detail(id):
-        if not current_user.is_lawyer:
+        if not current_user.is_lawyer and not current_user.is_manager:
             abort(403)
             
         lawyer = current_user.lawyer_profile
-        if not lawyer:
+        if not lawyer and current_user.is_lawyer:
             flash('Профиль юриста не найден', 'warning')
             return redirect(url_for('index'))
             
         consultation = Consultation.query.get_or_404(id)
         
-        # Проверка, назначена ли консультация текущему юристу
-        if consultation.lawyer_id != lawyer.id:
-            # Если консультация никому не назначена, назначаем ее текущему юристу
-            if consultation.lawyer_id is None:
-                consultation.lawyer_id = lawyer.id
-                db.session.commit()
-                flash('Консультация назначена вам', 'success')
-            else:
+        # Руководитель может просматривать любые консультации
+        if current_user.is_manager:
+            pass
+        # Проверка для юриста, назначена ли консультация текущему юристу
+        elif consultation.lawyer_id != lawyer.id:
+            # Если консультация никому не назначена, мы показываем ее, но не назначаем автоматически
+            if consultation.lawyer_id is not None:
                 abort(403)
         
         # Получаем все сообщения консультации

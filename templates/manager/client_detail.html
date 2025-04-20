@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр клиента | Консалтинг{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Просмотр клиента: {{ client.user.full_name }}</h2>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    Основная информация
+                </div>
+                <div class="card-body">
+                    <p><strong>Компания:</strong> {{ client.company_name or "Не указано" }}</p>
+                    <p><strong>Email:</strong> {{ client.user.email }}</p>
+                    <p><strong>Телефон:</strong> {{ client.user.phone or "Не указано" }}</p>
+                    <p><strong>Дата регистрации:</strong> {{ client.user.created_at.strftime('%d.%m.%Y') }}</p>
+                    <p><strong>Последняя активность:</strong> {{ client.user.last_active.strftime('%d.%m.%Y %H:%M') }}</p>
+                    <p><strong>Договор:</strong> {% if active_contract %}{{ active_contract.contract_number }}{% else %}Нет активного договора{% endif %}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('manager_edit_client', id=client.id) }}" class="btn btn-primary">Редактировать</a>
+                    {% if not active_contract %}
+                    <a href="{{ url_for('manager_create_contract', client_id=client.id) }}" class="btn btn-success">Создать договор</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    Договоры
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Дата начала</th>
+                                    <th>Дата окончания</th>
+                                    <th>Ставка</th>
+                                    <th>Часов в месяц</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract in contracts %}
+                                <tr>
+                                    <td>{{ contract.contract_number }}</td>
+                                    <td>{{ contract.start_date.strftime('%d.%m.%Y') }}</td>
+                                    <td>{{ contract.end_date.strftime('%d.%m.%Y') if contract.end_date else "Бессрочный" }}</td>
+                                    <td>{{ contract.hourly_rate }} ₽</td>
+                                    <td>{{ contract.monthly_hours }}</td>
+                                    <td>{{ contract.status }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-primary">Изменить</a>
+                                        {% if contract.document %}
+                                        <a href="{{ url_for('download_document', id=contract.document.id) }}" class="btn btn-sm btn-info">Скан</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center">Нет договоров</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{{ url_for('manager_create_contract', client_id=client.id) }}" class="btn btn-success">Добавить договор</a>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    Биллинг за текущий месяц
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card text-white bg-primary mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Часы по договору</h5>
+                                    <p class="card-text display-4">{{ monthly_hours }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-info mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Использовано часов</h5>
+                                    <p class="card-text display-4">{{ used_hours }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-warning mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Остаток часов</h5>
+                                    <p class="card-text display-4">{{ remaining_hours }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <p class="mb-0"><strong>Всего начислено:</strong> {{ total_amount }} ₽</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    Последние консультации
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Тема</th>
+                                    <th>Статус</th>
+                                    <th>Юрист</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for consultation in consultations %}
+                                <tr>
+                                    <td>{{ consultation.created_at.strftime('%d.%m.%Y') }}</td>
+                                    <td>{{ consultation.topic }}</td>
+                                    <td>{{ consultation.status }}</td>
+                                    <td>{{ consultation.lawyer.user.full_name if consultation.lawyer else "Не назначен" }}</td>
+                                    <td>
+                                        <a href="{{ url_for('lawyer_consultation_detail', id=consultation.id) }}" class="btn btn-sm btn-primary">Просмотр</a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Нет консультаций</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
