@@ -25,7 +25,8 @@ def register_routes(app):
             'now': datetime.now,
             'get_recent_newsletters': lambda: Newsletter.query.order_by(Newsletter.sent_at.desc()).limit(5).all(),
             'get_new_consultations': lambda: Consultation.query.filter_by(status='открыта').order_by(Consultation.created_at.desc()).limit(5).all(),
-            'get_assigned_consultations': lambda: Consultation.query.filter_by(status='в работе').order_by(Consultation.updated_at.desc()).limit(5).all()
+            'get_assigned_consultations': lambda: Consultation.query.filter_by(status='в работе').order_by(Consultation.updated_at.desc()).limit(5).all(),
+            'get_upcoming_events': lambda: CalendarEvent.query.filter(CalendarEvent.start_time >= datetime.now()).order_by(CalendarEvent.start_time).limit(5).all()
         }
         
     # Главная страница
