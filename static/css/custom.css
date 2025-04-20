@@ -1,0 +1,90 @@
+/* Основные стили */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+footer {
+    margin-top: auto;
+}
+
+/* Стили для навигации */
+.navbar-brand {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+/* Стили для карточек */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для сообщений в консультациях */
+.message-thread {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.message-from-me .message-content {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.message-content {
+    word-break: break-word;
+}
+
+/* Стили для статусов */
+.badge {
+    font-weight: 500;
+}
+
+/* Стили для форм */
+.form-label {
+    font-weight: 500;
+}
+
+/* Стили для списков */
+.list-group-item {
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+/* Полезные утилиты */
+.feather-sm {
+    width: 16px;
+    height: 16px;
+}
+
+/* Статистика на дашборде */
+.stat-card {
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    opacity: 0.7;
+}
