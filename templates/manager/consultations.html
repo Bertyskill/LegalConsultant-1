@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Все консультации{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Все консультации</h1>
+            <p class="text-muted">Управление консультациями и назначение юристов</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('manager_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Назад к панели
+            </a>
+        </div>
+    </div>
+    
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Статус консультации</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="all" {% if status == 'all' %}selected{% endif %}>Все статусы</option>
+                        <option value="открыта" {% if status == 'открыта' %}selected{% endif %}>Открыта</option>
+                        <option value="в работе" {% if status == 'в работе' %}selected{% endif %}>В работе</option>
+                        <option value="завершена" {% if status == 'завершена' %}selected{% endif %}>Завершена</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="lawyer_id" class="form-label">Юрист</label>
+                    <select name="lawyer_id" id="lawyer_id" class="form-select">
+                        <option value="">Все юристы</option>
+                        {% for lawyer in lawyers %}
+                            <option value="{{ lawyer.id }}" {% if selected_lawyer == lawyer.id %}selected{% endif %}>
+                                {{ lawyer.user.full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Применить фильтры</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Список консультаций -->
+    <div class="card">
+        <div class="card-body">
+            {% if consultations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Тема</th>
+                                <th>Клиент</th>
+                                <th>Категория</th>
+                                <th>Юрист</th>
+                                <th>Статус</th>
+                                <th>Дата создания</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consultation in consultations %}
+                                <tr>
+                                    <td>{{ consultation.topic }}</td>
+                                    <td>
+                                        {% set client = consultation.client %}
+                                        {% if client %}
+                                            {{ client.user.full_name }}
+                                        {% else %}
+                                            Не указан
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if consultation.category %}
+                                            {{ consultation.category.name }}
+                                        {% else %}
+                                            Не указана
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if consultation.lawyer_id %}
+                                            {% set lawyer = consultation.lawyer %}
+                                            {{ lawyer.user.full_name }}
+                                        {% else %}
+                                            <span class="text-danger">Не назначен</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if consultation.status == 'открыта' %}
+                                            <span class="badge bg-warning text-dark">Открыта</span>
+                                        {% elif consultation.status == 'в работе' %}
+                                            <span class="badge bg-info">В работе</span>
+                                        {% elif consultation.status == 'завершена' %}
+                                            <span class="badge bg-success">Завершена</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ consultation.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ consultation.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('manager_consultation_detail', id=consultation.id) }}" class="btn btn-sm btn-primary">
+                                            Просмотр
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i data-feather="info" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <h5>Консультации не найдены</h5>
+                            <p class="mb-0">
+                                По указанным фильтрам не найдено ни одной консультации. Попробуйте изменить параметры поиска.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

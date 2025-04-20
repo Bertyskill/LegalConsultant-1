@@ -60,6 +60,7 @@ class ConsultationForm(FlaskForm):
     category_id = SelectField('Отрасль права', coerce=int, validators=[DataRequired()])
     topic = StringField('Тема', validators=[DataRequired()])
     request = TextAreaField('Запрос', validators=[DataRequired()])
+    lawyer_id = SelectField('Назначить юриста', coerce=int, validators=[Optional()])
 
 # Форма загрузки документа
 class DocumentForm(FlaskForm):

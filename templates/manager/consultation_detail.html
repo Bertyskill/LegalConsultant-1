@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Просмотр консультации{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Консультация #{{ consultation.id }}</h1>
+            <p class="text-muted">
+                Тема: {{ consultation.topic }} | 
+                Статус: 
+                {% if consultation.status == 'открыта' %}
+                    <span class="badge bg-warning text-dark">Открыта</span>
+                {% elif consultation.status == 'в работе' %}
+                    <span class="badge bg-info">В работе</span>
+                {% elif consultation.status == 'завершена' %}
+                    <span class="badge bg-success">Завершена</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ consultation.status }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('manager_consultations') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Левая колонка: Информация о консультации -->
+        <div class="col-lg-8">
+            <!-- Детали консультации -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Детали консультации</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <dl>
+                                <dt>Клиент</dt>
+                                <dd>
+                                    {% if consultation.client %}
+                                        {{ consultation.client.user.full_name }}
+                                        {% if consultation.client.company_name %}
+                                            ({{ consultation.client.company_name }})
+                                        {% endif %}
+                                    {% else %}
+                                        Не указан
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt>Категория</dt>
+                                <dd>
+                                    {% if consultation.category %}
+                                        {{ consultation.category.name }}
+                                    {% else %}
+                                        Не указана
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt>Дата создания</dt>
+                                <dd>{{ consultation.created_at.strftime('%d.%m.%Y %H:%M') }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl>
+                                <dt>Юрист</dt>
+                                <dd>
+                                    {% if consultation.lawyer_id %}
+                                        {% set lawyer = consultation.lawyer %}
+                                        {{ lawyer.user.full_name }}
+                                    {% else %}
+                                        <span class="text-danger">Не назначен</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt>Время взятия в работу</dt>
+                                <dd>
+                                    {% if consultation.assigned_at %}
+                                        {{ consultation.assigned_at.strftime('%d.%m.%Y %H:%M') }}
+                                    {% else %}
+                                        Не в работе
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt>Затраченное время</dt>
+                                <dd>{{ consultation.time_spent }} ч.</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4">Запрос клиента</h6>
+                    <div class="p-3 bg-light rounded mb-4">
+                        {{ consultation.request|nl2br }}
+                    </div>
+                    
+                    {% if consultation.response %}
+                        <h6>Ответ юриста</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ consultation.response|nl2br }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Форма для назначения юриста -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Назначение юриста</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="lawyer_id" class="form-label">Назначить юриста</label>
+                            {{ form.lawyer_id(class="form-select") }}
+                            {% for error in form.lawyer_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                {% if consultation.lawyer_id %}
+                                    Изменить назначение
+                                {% else %}
+                                    Назначить юриста
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Чат -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">История сообщений</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4" style="max-height: 400px; overflow-y: auto;">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="d-flex mb-3 {% if message.sender.id == current_user.id %}flex-row-reverse{% endif %}">
+                                    <div class="flex-shrink-0 me-3 {% if message.sender.id == current_user.id %}ms-3 me-0{% endif %}">
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                            {{ message.sender.first_name[0] }}{{ message.sender.last_name[0] }}
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="card {% if message.sender.id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %}">
+                                            <div class="card-body">
+                                                <div class="mb-1 d-flex justify-content-between">
+                                                    <span class="fw-bold">{{ message.sender.full_name }}</span>
+                                                    <small>{{ message.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                                                </div>
+                                                <p class="mb-0">{{ message.content|nl2br }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                Сообщений пока нет
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Форма добавления сообщения -->
+                    <form method="POST" action="{{ url_for('lawyer_add_message') }}">
+                        {{ message_form.hidden_tag() }}
+                        {{ message_form.consultation_id(value=consultation.id) }}
+                        
+                        <div class="mb-3">
+                            {{ message_form.content(class="form-control", rows="3", placeholder="Введите ваше сообщение...") }}
+                            {% for error in message_form.content.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">Отправить сообщение</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правая колонка: Дополнительная информация -->
+        <div class="col-lg-4">
+            <!-- Документы -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Документы</h5>
+                </div>
+                <div class="card-body">
+                    {% if consultation.documents %}
+                        <ul class="list-group">
+                            {% for document in consultation.documents %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="{{ url_for('download_document', id=document.id) }}" class="text-decoration-none">
+                                            {{ document.filename }}
+                                        </a>
+                                        {% if document.description %}
+                                            <small class="d-block text-muted">{{ document.description }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{{ url_for('download_document', id=document.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            Документы отсутствуют
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocumentModal">
+                            <i class="fas fa-upload"></i> Загрузить документ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Биллинг -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Биллинг</h5>
+                </div>
+                <div class="card-body">
+                    {% if consultation.billing_entries %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Услуга</th>
+                                        <th>Часы</th>
+                                        <th>Сумма</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in consultation.billing_entries %}
+                                        <tr>
+                                            <td>{{ entry.date.strftime('%d.%m.%Y') }}</td>
+                                            <td>{{ entry.service_name }}</td>
+                                            <td>{{ entry.hours }}</td>
+                                            <td>
+                                                {% if entry.is_clarification %}
+                                                    <span class="text-muted">Уточнение</span>
+                                                {% else %}
+                                                    {{ entry.amount|round(2) }} ₽
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light">
+                                        <th colspan="2">Итого:</th>
+                                        <th>{{ consultation.time_spent }}</th>
+                                        <th>
+                                            {% set total = 0 %}
+                                            {% for entry in consultation.billing_entries %}
+                                                {% if not entry.is_clarification %}
+                                                    {% set total = total + entry.amount %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ total|round(2) }} ₽
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            Записи биллинга отсутствуют
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для загрузки документа -->
+<div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadDocumentModalLabel">Загрузка документа</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('upload_document') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
+                    
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Файл</label>
+                        <input type="file" name="file" id="file" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Описание</label>
+                        <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Загрузить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

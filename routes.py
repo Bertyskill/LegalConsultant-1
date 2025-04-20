@@ -1077,11 +1077,16 @@ def register_routes(app):
                 contract_number=form.contract_number.data,
                 start_date=form.start_date.data,
                 end_date=form.end_date.data,
+                payment_type=form.payment_type.data,
                 hourly_rate=form.hourly_rate.data,
-                monthly_hours=form.monthly_hours.data,
                 terms=form.terms.data,
                 status='активный'
             )
+            
+            # Если абонемент, устанавливаем количество часов
+            if form.payment_type.data == 'subscription' and form.monthly_hours.data:
+                new_contract.monthly_hours = form.monthly_hours.data
+            
             db.session.add(new_contract)
             db.session.commit()
             
@@ -1359,6 +1364,90 @@ def register_routes(app):
             form=form
         )
 
+    @app.route('/manager/consultations')
+    @login_required
+    def manager_consultations():
+        if not current_user.is_manager:
+            abort(403)
+            
+        # Фильтрация по статусу консультации
+        status = request.args.get('status', 'all')
+        lawyer_id = request.args.get('lawyer_id', type=int)
+        
+        # Формируем запрос
+        query = Consultation.query
+        
+        if status != 'all':
+            query = query.filter_by(status=status)
+            
+        if lawyer_id:
+            query = query.filter_by(lawyer_id=lawyer_id)
+            
+        consultations = query.order_by(Consultation.updated_at.desc()).all()
+        
+        # Получаем всех юристов для фильтра
+        lawyers = LawyerProfile.query.join(User).order_by(User.last_name).all()
+        
+        return render_template(
+            'manager/consultations.html',
+            consultations=consultations,
+            status=status,
+            selected_lawyer=lawyer_id,
+            lawyers=lawyers
+        )
+        
+    @app.route('/manager/consultation/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def manager_consultation_detail(id):
+        if not current_user.is_manager:
+            abort(403)
+            
+        consultation = Consultation.query.get_or_404(id)
+        
+        # Получаем всех юристов для назначения
+        lawyers = LawyerProfile.query.join(User).order_by(User.last_name).all()
+        
+        # Форма назначения юриста
+        form = ConsultationForm(obj=consultation)
+        form.lawyer_id.choices = [(0, '-- Не назначен --')] + [(l.id, l.user.full_name) for l in lawyers]
+        
+        if request.method == 'GET':
+            form.category_id.data = consultation.category_id
+            form.topic.data = consultation.topic
+            form.request.data = consultation.request
+            if consultation.lawyer_id:
+                form.lawyer_id.data = consultation.lawyer_id
+                
+        if form.validate_on_submit():
+            # Если юрист назначен
+            if form.lawyer_id.data > 0:
+                # Юрист был изменен
+                if consultation.lawyer_id != form.lawyer_id.data:
+                    consultation.lawyer_id = form.lawyer_id.data
+                    consultation.status = 'в работе'
+                    consultation.assigned_at = datetime.now()
+                    consultation.assigned_by_id = current_user.id
+                    db.session.commit()
+                    
+                    flash('Юрист успешно назначен на консультацию', 'success')
+            
+            return redirect(url_for('manager_consultation_detail', id=consultation.id))
+        
+        # Получаем сообщения
+        messages = Message.query.filter_by(consultation_id=consultation.id).order_by(Message.created_at).all()
+        
+        # Форма добавления сообщения
+        message_form = MessageForm()
+        
+        return render_template(
+            'manager/consultation_detail.html',
+            consultation=consultation,
+            form=form,
+            messages=messages,
+            message_form=message_form,
+            lawyers=lawyers
+        )
+            
     @app.route('/manager/reports')
     @login_required
     def manager_reports():
