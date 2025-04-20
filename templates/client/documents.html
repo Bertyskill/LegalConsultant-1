@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Документы | ЮрКонсалт{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-0">Документы</h1>
+        <p class="text-muted">Договоры и файлы консультаций</p>
+    </div>
+</div>
+
+<!-- Активные договоры -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Договоры</h5>
+    </div>
+    <div class="card-body">
+        {% if contracts %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Номер договора</th>
+                            <th>Дата начала</th>
+                            <th>Дата окончания</th>
+                            <th>Стоимость часа</th>
+                            <th>Часов в месяц</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contract in contracts %}
+                            <tr>
+                                <td>{{ contract.contract_number }}</td>
+                                <td>{{ contract.start_date.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    {% if contract.end_date %}
+                                        {{ contract.end_date.strftime('%d.%m.%Y') }}
+                                    {% else %}
+                                        Бессрочный
+                                    {% endif %}
+                                </td>
+                                <td>{{ contract.hourly_rate }} ₽</td>
+                                <td>{{ contract.monthly_hours }}</td>
+                                <td>
+                                    <span class="badge rounded-pill {% if contract.status == 'активный' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ contract.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if contract.document %}
+                                        <a href="{{ url_for('download_document', id=contract.document.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i data-feather="download" class="feather-sm me-1"></i> Скачать
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Нет файла</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i data-feather="file-text" style="width: 48px; height: 48px; color: var(--bs-secondary);"></i>
+                <p class="mt-3">У вас нет договоров</p>
+                <p class="text-muted">Обратитесь к менеджеру для оформления договора</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Документы из консультаций -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Документы консультаций</h5>
+    </div>
+    <div class="card-body">
+        {% if documents %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Название файла</th>
+                            <th>Описание</th>
+                            <th>Дата загрузки</th>
+                            <th>Размер</th>
+                            <th>Загрузил</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documents %}
+                            <tr>
+                                <td>{{ doc.filename }}</td>
+                                <td>{{ doc.description or '-' }}</td>
+                                <td>{{ doc.upload_date.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>
+                                    {% if doc.file_size < 1024 %}
+                                        {{ doc.file_size }} байт
+                                    {% elif doc.file_size < 1024 * 1024 %}
+                                        {{ (doc.file_size / 1024)|round(1) }} КБ
+                                    {% else %}
+                                        {{ (doc.file_size / (1024 * 1024))|round(1) }} МБ
+                                    {% endif %}
+                                </td>
+                                <td>{{ doc.uploaded_by.full_name }}</td>
+                                <td>
+                                    <a href="{{ url_for('download_document', id=doc.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i data-feather="download" class="feather-sm me-1"></i> Скачать
+                                    </a>
+                                    
+                                    <!-- Если документ связан с консультациями, добавляем ссылку на консультацию -->
+                                    {% if doc.consultations|length > 0 %}
+                                        <a href="{{ url_for('client_consultation_detail', id=doc.consultations[0].id) }}" class="btn btn-sm btn-outline-secondary ms-1">
+                                            <i data-feather="message-square" class="feather-sm me-1"></i> К консультации
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i data-feather="file" style="width: 48px; height: 48px; color: var(--bs-secondary);"></i>
+                <p class="mt-3">Документы отсутствуют</p>
+                <p class="text-muted">В рамках консультаций ещё не было загружено ни одного документа</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Инициализация Feather Icons для маленьких иконок
+    document.addEventListener('DOMContentLoaded', () => {
+        // Заменяем иконки в таблице
+        document.querySelectorAll('.feather-sm').forEach(icon => {
+            icon.setAttribute('width', '16');
+            icon.setAttribute('height', '16');
+        });
+    });
+</script>
+{% endblock %}

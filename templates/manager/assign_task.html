@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Назначение задачи | ЮрКонсалт{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('manager_dashboard') }}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('manager_tasks') }}">Задачи</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Назначение новой задачи</li>
+            </ol>
+        </nav>
+        <h1 class="mb-0">Назначение новой задачи</h1>
+        <p class="text-muted">Создайте задачу для юриста</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Форма создания задачи</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('manager_assign_task') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="title" class="form-label">Заголовок задачи <span class="text-danger">*</span></label>
+                    {{ form.title(class="form-control", id="title", placeholder="Введите заголовок задачи") }}
+                    {% for error in form.title.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label for="priority" class="form-label">Приоритет</label>
+                    {{ form.priority(class="form-select", id="priority") }}
+                    {% for error in form.priority.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="assigned_to_id" class="form-label">Назначить юристу <span class="text-danger">*</span></label>
+                    {{ form.assigned_to_id(class="form-select", id="assigned_to_id") }}
+                    {% for error in form.assigned_to_id.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label for="client_id" class="form-label">Клиент <span class="text-danger">*</span></label>
+                    {{ form.client_id(class="form-select", id="client_id") }}
+                    {% for error in form.client_id.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="due_date" class="form-label">Срок выполнения <span class="text-danger">*</span></label>
+                {{ form.due_date(class="form-control", id="due_date", type="date") }}
+                {% for error in form.due_date.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Описание задачи</label>
+                {{ form.description(class="form-control", id="description", rows="5", placeholder="Подробное описание задачи...") }}
+                {% for error in form.description.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            
+            <div class="alert alert-info">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i data-feather="info" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <div>
+                        <h5>Рекомендации</h5>
+                        <p class="mb-0">
+                            Постарайтесь максимально четко сформулировать задачу. Укажите конкретные ожидаемые результаты 
+                            и сроки выполнения. Это поможет юристу эффективно спланировать свою работу.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('manager_tasks') }}" class="btn btn-outline-secondary">
+                    <i data-feather="arrow-left" class="me-1"></i> Вернуться к списку
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i data-feather="clipboard" class="me-1"></i> Создать задачу
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Установка значения даты срока на завтрашний день по умолчанию
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const year = tomorrow.getFullYear();
+        let month = (tomorrow.getMonth() + 1).toString().padStart(2, '0');
+        let day = tomorrow.getDate().toString().padStart(2, '0');
+        
+        document.getElementById('due_date').value = `${year}-${month}-${day}`;
+    });
+</script>
+{% endblock %}

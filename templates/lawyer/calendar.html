@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Календарь | ЮрКонсалт{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-0">Календарь мероприятий</h1>
+        <p class="text-muted">Планирование встреч и событий</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Календарь</h5>
+    </div>
+    <div class="card-body">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- Модальное окно с деталями события -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventTitle">Детали события</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6>Дата и время:</h6>
+                    <p id="eventDateTime"></p>
+                </div>
+                <div class="mb-3">
+                    <h6>Место проведения:</h6>
+                    <p id="eventLocation"></p>
+                </div>
+                <div class="mb-3">
+                    <h6>Описание:</h6>
+                    <p id="eventDescription"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'ru',
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            weekNumbers: true,
+            navLinks: true,
+            editable: false,
+            dayMaxEvents: true,
+            events: JSON.parse('{{ events|safe }}'),
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            },
+            eventClick: function(info) {
+                // Заполняем модальное окно данными о событии
+                document.getElementById('eventTitle').textContent = info.event.title;
+                
+                const start = info.event.start;
+                const end = info.event.end;
+                let dateTimeStr = '';
+                
+                if (start) {
+                    const formattedStart = start.toLocaleString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    dateTimeStr = formattedStart;
+                    
+                    if (end) {
+                        const formattedEnd = end.toLocaleString('ru-RU', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        dateTimeStr += ' - ' + formattedEnd;
+                    }
+                }
+                
+                document.getElementById('eventDateTime').textContent = dateTimeStr;
+                document.getElementById('eventLocation').textContent = info.event.extendedProps.location || 'Не указано';
+                document.getElementById('eventDescription').textContent = info.event.extendedProps.description || 'Описание отсутствует';
+                
+                // Показываем модальное окно
+                const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+                eventModal.show();
+            }
+        });
+        
+        calendar.render();
+    });
+</script>
+{% endblock %}

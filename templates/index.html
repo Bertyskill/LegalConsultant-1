@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}ЮрКонсалт - Юридическая консалтинговая компания{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <h1 class="display-4 mb-4">ЮрКонсалт</h1>
+            <p class="lead mb-4">Профессиональные юридические услуги для вашего бизнеса</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">Войти в систему</a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-lg px-4">Регистрация</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5 pt-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i data-feather="briefcase" style="width: 64px; height: 64px;"></i>
+                    </div>
+                    <h3>Для бизнеса</h3>
+                    <p class="text-muted">Комплексное юридическое сопровождение вашей компании для уверенного роста и защиты от рисков.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i data-feather="shield" style="width: 64px; height: 64px;"></i>
+                    </div>
+                    <h3>Защита интересов</h3>
+                    <p class="text-muted">Профессиональное представительство в судах и государственных органах для эффективной защиты ваших прав.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i data-feather="file-text" style="width: 64px; height: 64px;"></i>
+                    </div>
+                    <h3>Документы</h3>
+                    <p class="text-muted">Подготовка и анализ документов любой сложности с учетом актуального законодательства.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-lg-6 offset-lg-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-4">
+                    <h3>Нужна консультация?</h3>
+                    <p>Зарегистрируйтесь в системе и получите доступ к профессиональной юридической помощи</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-light">Зарегистрироваться</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
+{% endblock %}

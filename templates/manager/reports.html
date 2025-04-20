@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Отчеты | ЮрКонсалт{% endblock %}
+
+{% block extra_css %}
+<style>
+    .summary-card {
+        transition: all 0.3s;
+    }
+    .summary-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-lg {
+        font-size: 2.5rem;
+        font-weight: 300;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="mb-0">Финансовые отчеты</h1>
+        <p class="text-muted">Финансовая аналитика компании</p>
+    </div>
+    <div class="col-auto">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="reportActions" data-bs-toggle="dropdown" aria-expanded="false">
+                Действия
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="reportActions">
+                <li><a class="dropdown-item" href="#" id="printReport">
+                    <i data-feather="printer" class="me-2"></i> Печать отчета
+                </a></li>
+                <li><a class="dropdown-item" href="#" id="exportExcel">
+                    <i data-feather="file-text" class="me-2"></i> Экспорт в Excel
+                </a></li>
+                <li><a class="dropdown-item" href="#" id="exportPdf">
+                    <i data-feather="file" class="me-2"></i> Экспорт в PDF
+                </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Период отчета -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Период отчета</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('manager_reports') }}" method="get" id="reportDateForm">
+            <div class="row align-items-end">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label for="period" class="form-label">Выберите период</label>
+                    <select class="form-select" id="period" name="period">
+                        <option value="current_month" selected>Текущий месяц</option>
+                        <option value="previous_month">Предыдущий месяц</option>
+                        <option value="current_quarter">Текущий квартал</option>
+                        <option value="current_year">Текущий год</option>
+                        <option value="custom">Произвольный период</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0 custom-date-range d-none">
+                    <label for="start_date" class="form-label">Начало периода</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date">
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0 custom-date-range d-none">
+                    <label for="end_date" class="form-label">Конец периода</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Общие показатели -->
+<div class="row mb-4">
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card summary-card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-3">Общая сумма</h6>
+                <div class="stat-lg text-primary mb-2">{{ "%.2f"|format(total_amount) }} ₽</div>
+                <div class="text-muted">За {{ month_name }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card summary-card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-3">Затрачено часов</h6>
+                <div class="stat-lg text-success mb-2">{{ "%.1f"|format(total_hours) }}</div>
+                <div class="text-muted">За {{ month_name }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card summary-card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-3">Средняя стоимость часа</h6>
+                <div class="stat-lg text-info mb-2">
+                    {% if total_hours > 0 %}
+                        {{ "%.2f"|format(total_amount / total_hours) }} ₽
+                    {% else %}
+                        0.00 ₽
+                    {% endif %}
+                </div>
+                <div class="text-muted">За {{ month_name }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3 mb-4">
+        <div class="card summary-card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-3">Активных клиентов</h6>
+                <div class="stat-lg text-warning mb-2">{{ client_data|length }}</div>
+                <div class="text-muted">За {{ month_name }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Данные по клиентам -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Данные по клиентам</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if client_data %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Клиент</th>
+                            <th>Компания</th>
+                            <th>Договор</th>
+                            <th>Часов затрачено</th>
+                            <th>Сумма к оплате</th>
+                            <th>% от общей суммы</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for client_id, data in client_data.items() %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('manager_client_detail', id=client_id) }}">
+                                        {{ data.client.user.full_name }}
+                                    </a>
+                                </td>
+                                <td>{{ data.client.company_name or 'Не указано' }}</td>
+                                <td>
+                                    {% set active_contract = data.client.contracts|selectattr('status', 'equalto', 'активный')|first %}
+                                    {% if active_contract %}
+                                        {{ active_contract.contract_number }}
+                                    {% else %}
+                                        <span class="text-danger">Нет активного договора</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ "%.1f"|format(data.hours) }}</td>
+                                <td>{{ "%.2f"|format(data.amount) }} ₽</td>
+                                <td>
+                                    {% if total_amount > 0 %}
+                                        {% set percentage = (data.amount / total_amount * 100)|round(1) %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">{{ percentage }}%</div>
+                                            <div class="progress flex-grow-1" style="height: 6px;">
+                                                <div class="progress-bar" role="progressbar" style="width: {{ percentage }}%;" 
+                                                    aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i data-feather="alert-circle" style="width: 48px; height: 48px; color: var(--bs-secondary);"></i>
+                <p class="mt-3">Нет данных по клиентам за выбранный период</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Данные по юристам -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Данные по юристам</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if lawyer_data %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Юрист</th>
+                            <th>Специализация</th>
+                            <th>Часов затрачено</th>
+                            <th>Сумма услуг</th>
+                            <th>% от общего времени</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lawyer_id, data in lawyer_data.items() %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('manager_lawyer_detail', id=lawyer_id) }}">
+                                        {{ data.lawyer.user.full_name }}
+                                    </a>
+                                </td>
+                                <td>{{ data.lawyer.specialization }}</td>
+                                <td>{{ "%.1f"|format(data.hours) }}</td>
+                                <td>{{ "%.2f"|format(data.amount) }} ₽</td>
+                                <td>
+                                    {% if total_hours > 0 %}
+                                        {% set percentage = (data.hours / total_hours * 100)|round(1) %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">{{ percentage }}%</div>
+                                            <div class="progress flex-grow-1" style="height: 6px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ percentage }}%;" 
+                                                    aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i data-feather="alert-circle" style="width: 48px; height: 48px; color: var(--bs-secondary);"></i>
+                <p class="mt-3">Нет данных по юристам за выбранный период</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Графики -->
+<div class="row">
+    <div class="col-xl-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Распределение часов по юристам</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="lawyersPieChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Динамика оказания услуг</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="billingLineChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработка выбора периода отчета
+        const periodSelect = document.getElementById('period');
+        const customDateFields = document.querySelectorAll('.custom-date-range');
+        
+        periodSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customDateFields.forEach(field => field.classList.remove('d-none'));
+            } else {
+                customDateFields.forEach(field => field.classList.add('d-none'));
+            }
+        });
+
+        // Инициализация графиков, если есть данные
+        {% if lawyer_data %}
+            // Данные для графика распределения часов по юристам
+            const lawyersLabels = [
+                {% for lawyer_id, data in lawyer_data.items() %}
+                    "{{ data.lawyer.user.full_name }}",
+                {% endfor %}
+            ];
+            
+            const lawyersHours = [
+                {% for lawyer_id, data in lawyer_data.items() %}
+                    {{ data.hours }},
+                {% endfor %}
+            ];
+            
+            const lawyersPieCtx = document.getElementById('lawyersPieChart').getContext('2d');
+            new Chart(lawyersPieCtx, {
+                type: 'pie',
+                data: {
+                    labels: lawyersLabels,
+                    datasets: [{
+                        data: lawyersHours,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Распределение часов работы'
+                        }
+                    }
+                }
+            });
+        {% endif %}
+        
+        // Данные для графика динамики оказания услуг
+        const billingLineCtx = document.getElementById('billingLineChart').getContext('2d');
+        new Chart(billingLineCtx, {
+            type: 'line',
+            data: {
+                labels: ['1 неделя', '2 неделя', '3 неделя', '4 неделя'], // Замените на реальные данные
+                datasets: [{
+                    label: 'Часы по неделям',
+                    data: [12, 19, 15, 25], // Замените на реальные данные
+                    fill: false,
+                    borderColor: 'rgb(54, 162, 235)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Динамика оказания услуг по неделям'
+                    }
+                }
+            }
+        });
+        
+        // Обработчики экспорта и печати
+        document.getElementById('printReport').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.print();
+        });
+        
+        document.getElementById('exportExcel').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Функция экспорта в Excel будет доступна в следующей версии');
+        });
+        
+        document.getElementById('exportPdf').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Функция экспорта в PDF будет доступна в следующей версии');
+        });
+    });
+</script>
+{% endblock %}

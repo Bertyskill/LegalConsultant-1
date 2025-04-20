@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Рассылка | ЮрКонсалт{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('manager_dashboard') }}">Главная</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Рассылка</li>
+            </ol>
+        </nav>
+        <h1 class="mb-0">Рассылка клиентам</h1>
+        <p class="text-muted">Создание массовой рассылки по email для клиентов</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Создание рассылки</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('manager_newsletter') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Тема письма <span class="text-danger">*</span></label>
+                        {{ form.subject(class="form-control", id="subject", placeholder="Введите тему письма") }}
+                        {% for error in form.subject.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Содержание письма <span class="text-danger">*</span></label>
+                        {{ form.content(class="form-control", id="content", rows="15", placeholder="Введите текст сообщения...") }}
+                        {% for error in form.content.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                        
+                        <div class="form-text">
+                            Поддерживается базовая HTML-разметка.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i data-feather="info" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <div>
+                                <h5>Советы по составлению рассылки</h5>
+                                <ul class="mb-0">
+                                    <li>Используйте короткие и информативные заголовки</li>
+                                    <li>Разбивайте текст на небольшие абзацы</li>
+                                    <li>Выделяйте важную информацию</li>
+                                    <li>Включайте призыв к действию</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('manager_dashboard') }}" class="btn btn-outline-secondary">
+                            <i data-feather="arrow-left" class="me-1"></i> Вернуться
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="send" class="me-1"></i> Отправить рассылку
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Получатели</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 form-check">
+                    {{ form.all_clients(class="form-check-input", id="all_clients") }}
+                    <label class="form-check-label" for="all_clients">
+                        Отправить всем клиентам
+                    </label>
+                </div>
+                
+                <div id="recipients_container">
+                    <label class="form-label">Выберите получателей</label>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="recipientSearch" placeholder="Поиск по имени...">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                <i data-feather="x"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="recipients-list overflow-auto" style="max-height: 300px;">
+                        {{ form.recipients(class="list-group recipients-select", id="recipients", multiple="multiple", style="display: none;") }}
+                        
+                        <div class="list-group" id="recipientsDisplay">
+                            {% for value, label in form.recipients.choices %}
+                                <div class="list-group-item">
+                                    <div class="form-check">
+                                        <input class="form-check-input recipient-checkbox" type="checkbox" value="{{ value }}" id="recipient{{ value }}" data-name="{{ label|lower }}">
+                                        <label class="form-check-label" for="recipient{{ value }}">
+                                            {{ label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">Выбрать все</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">Снять выбор</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>Будет отправлено:</div>
+                    <div class="badge bg-primary" id="recipientCount">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Последние рассылки</h5>
+            </div>
+            <div class="card-body p-0">
+                {% set recent_newsletters = get_recent_newsletters() %}
+                {% if recent_newsletters %}
+                    <div class="list-group list-group-flush">
+                        {% for newsletter in recent_newsletters %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ newsletter.subject }}</h6>
+                                    <small>{{ newsletter.sent_at.strftime('%d.%m.%Y') }}</small>
+                                </div>
+                                <p class="mb-1 text-muted small">Получателей: {{ newsletter.recipients|length }}</p>
+                                <small>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#newsletterModal{{ newsletter.id }}">
+                                        Подробнее
+                                    </a>
+                                </small>
+                            </div>
+                            
+                            <!-- Модальное окно с подробностями рассылки -->
+                            <div class="modal fade" id="newsletterModal{{ newsletter.id }}" tabindex="-1" aria-labelledby="newsletterModalLabel{{ newsletter.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="newsletterModalLabel{{ newsletter.id }}">{{ newsletter.subject }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <h6>Дата отправки:</h6>
+                                                <p>{{ newsletter.sent_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h6>Отправитель:</h6>
+                                                <p>{{ newsletter.sent_by.full_name }}</p>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h6>Получатели:</h6>
+                                                <ul class="list-group">
+                                                    {% for recipient in newsletter.recipients %}
+                                                        <li class="list-group-item">{{ recipient.full_name }} ({{ recipient.email }})</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h6>Содержание:</h6>
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        {{ newsletter.content|safe }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                            <button type="button" class="btn btn-primary" id="copyNewsletter{{ newsletter.id }}">Использовать как шаблон</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="mail" style="width: 48px; height: 48px; color: var(--bs-secondary);"></i>
+                        <p class="mt-3">Рассылки не найдены</p>
+                        <p class="text-muted">Здесь будет отображаться история рассылок</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const allClientsCheckbox = document.getElementById('all_clients');
+        const recipientsContainer = document.getElementById('recipients_container');
+        const recipientsSelect = document.getElementById('recipients');
+        const recipientCheckboxes = document.querySelectorAll('.recipient-checkbox');
+        const selectAllBtn = document.getElementById('selectAll');
+        const deselectAllBtn = document.getElementById('deselectAll');
+        const recipientCountDisplay = document.getElementById('recipientCount');
+        const searchInput = document.getElementById('recipientSearch');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const recipientsListItems = document.querySelectorAll('#recipientsDisplay .list-group-item');
+        
+        // Функция подсчета выбранных получателей
+        function updateRecipientCount() {
+            const count = document.querySelectorAll('.recipient-checkbox:checked').length;
+            recipientCountDisplay.textContent = allClientsCheckbox.checked ? 'Все клиенты' : count;
+            
+            // Обновляем скрытое поле select
+            Array.from(recipientsSelect.options).forEach(option => {
+                option.selected = document.getElementById('recipient' + option.value).checked;
+            });
+        }
+        
+        // Переключение режима выбора получателей
+        allClientsCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                recipientsContainer.classList.add('text-muted');
+                recipientsContainer.style.opacity = '0.5';
+                recipientsContainer.style.pointerEvents = 'none';
+            } else {
+                recipientsContainer.classList.remove('text-muted');
+                recipientsContainer.style.opacity = '1';
+                recipientsContainer.style.pointerEvents = 'auto';
+            }
+            updateRecipientCount();
+        });
+        
+        // Обработчики для чекбоксов получателей
+        recipientCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateRecipientCount);
+        });
+        
+        // Кнопка "Выбрать все"
+        selectAllBtn.addEventListener('click', function() {
+            recipientCheckboxes.forEach(checkbox => {
+                if (!checkbox.closest('.list-group-item').classList.contains('d-none')) {
+                    checkbox.checked = true;
+                }
+            });
+            updateRecipientCount();
+        });
+        
+        // Кнопка "Снять выбор"
+        deselectAllBtn.addEventListener('click', function() {
+            recipientCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateRecipientCount();
+        });
+        
+        // Поиск по получателям
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            recipientsListItems.forEach(item => {
+                const checkbox = item.querySelector('.recipient-checkbox');
+                const recipientName = checkbox.dataset.name;
+                
+                if (recipientName.includes(searchTerm)) {
+                    item.classList.remove('d-none');
+                } else {
+                    item.classList.add('d-none');
+                }
+            });
+        });
+        
+        // Очистка поиска
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            recipientsListItems.forEach(item => {
+                item.classList.remove('d-none');
+            });
+        });
+        
+        // Копирование содержимого предыдущих рассылок
+        {% for newsletter in recent_newsletters %}
+            document.getElementById('copyNewsletter{{ newsletter.id }}')?.addEventListener('click', function() {
+                document.getElementById('subject').value = '{{ newsletter.subject }}';
+                document.getElementById('content').value = `{{ newsletter.content|replace('\n', '\\n')|replace('"', '\\"')|safe }}`;
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newsletterModal{{ newsletter.id }}'));
+                modal.hide();
+            });
+        {% endfor %}
+        
+        // Инициализация
+        updateRecipientCount();
+    });
+</script>
+{% endblock %}
