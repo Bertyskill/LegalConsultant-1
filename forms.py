@@ -91,14 +91,22 @@ class ContractForm(FlaskForm):
     contract_number = StringField('Номер договора', validators=[DataRequired()])
     start_date = DateField('Дата начала', validators=[DataRequired()])
     end_date = DateField('Дата окончания', validators=[Optional()])
+    
+    payment_type = SelectField('Тип оплаты', choices=[
+        ('hourly', 'Почасовая оплата'),
+        ('subscription', 'Абонемент')
+    ], validators=[DataRequired()])
+    
     hourly_rate = FloatField('Стоимость часа (руб.)', validators=[
-        DataRequired(),
+        Optional(),
         NumberRange(min=0, message='Стоимость не может быть отрицательной')
     ])
+    
     monthly_hours = FloatField('Количество часов в месяц', validators=[
-        DataRequired(),
+        Optional(),
         NumberRange(min=0, message='Количество часов не может быть отрицательным')
     ])
+    
     terms = TextAreaField('Условия договора', validators=[Optional()])
     document = FileField('Скан договора', validators=[Optional()])
 
@@ -133,6 +141,7 @@ class NewsletterForm(FlaskForm):
 class ClientRegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Пароль', validators=[DataRequired(), Length(min=6)])
+    password2 = PasswordField('Повторите пароль', validators=[DataRequired(), EqualTo('password')])
     first_name = StringField('Имя', validators=[DataRequired()])
     last_name = StringField('Фамилия', validators=[DataRequired()])
     phone = StringField('Телефон', validators=[Optional()])
@@ -144,6 +153,14 @@ class ClientRegistrationForm(FlaskForm):
     contract_end_date = DateField('Дата окончания договора', validators=[Optional()])
     hourly_rate = FloatField('Стоимость часа (руб.)', validators=[Optional()])
     monthly_hours = FloatField('Количество часов в месяц', validators=[Optional()])
+    
+# Форма редактирования клиента (для менеджера)
+class ClientEditForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    first_name = StringField('Имя', validators=[DataRequired()])
+    last_name = StringField('Фамилия', validators=[DataRequired()])
+    phone = StringField('Телефон', validators=[Optional()])
+    company_name = StringField('Название компании', validators=[Optional()])
 
 # Форма поиска
 class SearchForm(FlaskForm):

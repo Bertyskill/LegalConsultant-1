@@ -13,7 +13,7 @@ from models import (User, UserRole, ClientProfile, LawyerProfile,
 from forms import (LoginForm, RegisterForm, ClientProfileForm, LawyerProfileForm, 
                   ConsultationForm, DocumentForm, TaskForm, ContractForm, 
                   BillingEntryForm, CalendarEventForm, MessageForm, NewsletterForm,
-                  ClientRegistrationForm, SearchForm)
+                  ClientRegistrationForm, ClientEditForm, SearchForm)
 from email_handler import send_notification_email, process_incoming_emails
 from utils import calculate_monthly_billing, get_client_statistics, get_lawyer_statistics
 
@@ -1021,8 +1021,8 @@ def register_routes(app):
         client = ClientProfile.query.get_or_404(id)
         user = User.query.get(client.user_id)
         
-        # Используем форму для регистрации клиента, так как она содержит все нужные поля
-        form = ClientRegistrationForm()
+        # Используем специальную форму для редактирования клиента
+        form = ClientEditForm()
         
         if request.method == 'GET':
             form.email.data = user.email

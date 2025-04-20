@@ -63,11 +63,8 @@
                     {% endfor %}
                 </div>
                 
-                <!-- Пароль скрыт, так как при редактировании не нужен пароль -->
-                <div class="d-none">
-                    {{ form.password(value="TemporaryNotUsed123!") }}
-                    {{ form.password2(value="TemporaryNotUsed123!") }}
-                </div>
+                <!-- Пароль не требуется при редактировании клиента -->
+                <!-- Используем специальную форму ClientEditForm -->
                 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <a href="{{ url_for('manager_client_detail', id=client.id) }}" class="btn btn-outline-secondary">Отмена</a>
