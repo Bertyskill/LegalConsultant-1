@@ -534,18 +534,34 @@ def register_routes(app):
         status = request.args.get('status', 'all')
         
         # Формируем запрос
+        
+        # Юрист должен видеть:
+        # 1. Свои консультации (назначенные на него)
+        # 2. Открытые консультации, доступные для взятия в работу
+        
         # Получаем консультации, назначенные юристу
         assigned_query = Consultation.query.filter_by(lawyer_id=lawyer.id)
         
         # Получаем открытые консультации, доступные для взятия в работу
-        open_query = Consultation.query.filter_by(status='открыта', lawyer_id=None)
+        open_query = Consultation.query.filter_by(status='открыта')
         
         # Объединяем запросы или применяем фильтр
         if status == 'all':
-            # Все консультации (назначенные + открытые)
-            consultations = assigned_query.all() + open_query.all()
+            # Все консультации юриста + открытые (для назначения)
+            assigned_consultations = assigned_query.all()
+            open_consultations = open_query.all()
+            
+            # Фильтруем, чтобы избежать дублирования
+            consultations = assigned_consultations[:]
+            
+            # Добавляем только те открытые консультации, которые еще не видны
+            for c in open_consultations:
+                if c not in consultations:
+                    consultations.append(c)
+                    
             # Сортируем по дате обновления
             consultations.sort(key=lambda x: x.updated_at, reverse=True)
+            
         elif status == 'открыта':
             # Только открытые консультации
             consultations = open_query.order_by(Consultation.updated_at.desc()).all()
@@ -591,7 +607,7 @@ def register_routes(app):
         billing_form = BillingEntryForm()
         
         # Форма для CSRF-защиты (для других форм без WTForms)
-        form = FlaskForm()
+        form = MessageForm()
         
         return render_template(
             'lawyer/consultation_detail.html',
@@ -634,6 +650,39 @@ def register_routes(app):
         flash('Консультация взята в работу', 'success')
         return redirect(url_for('lawyer_consultation_detail', id=id))
         
+    @app.route('/lawyer/consultation/update_status/<int:id>', methods=['POST'])
+    @login_required
+    def lawyer_update_consultation_status(id):
+        if not current_user.is_lawyer and not current_user.is_manager:
+            abort(403)
+            
+        lawyer = current_user.lawyer_profile
+        if not lawyer and current_user.is_lawyer:
+            flash('Профиль юриста не найден', 'warning')
+            return redirect(url_for('index'))
+            
+        consultation = Consultation.query.get_or_404(id)
+        
+        # Проверка доступа для юриста
+        if current_user.is_lawyer and consultation.lawyer_id != lawyer.id:
+            flash('Вы не назначены на эту консультацию', 'danger')
+            return redirect(url_for('lawyer_consultations'))
+        
+        status = request.form.get('status')
+        if status and status in ['открыта', 'в работе', 'завершена', 'отменена']:
+            old_status = consultation.status
+            consultation.status = status
+            consultation.updated_at = datetime.now()
+            
+            # Если консультация завершается, фиксируем время завершения
+            if status == 'завершена' and old_status != 'завершена':
+                consultation.completed_at = datetime.now()
+                
+            db.session.commit()
+            flash(f'Статус консультации изменен на "{status}"', 'success')
+        
+        return redirect(url_for('lawyer_consultation_detail', id=id))
+        
     @app.route('/lawyer/consultation/update_response/<int:id>', methods=['POST'])
     @login_required
     def lawyer_update_response(id):
@@ -671,11 +720,11 @@ def register_routes(app):
     @app.route('/lawyer/message/add', methods=['POST'])
     @login_required
     def lawyer_add_message():
-        if not current_user.is_lawyer:
+        if not current_user.is_lawyer and not current_user.is_manager:
             abort(403)
             
         lawyer = current_user.lawyer_profile
-        if not lawyer:
+        if not lawyer and current_user.is_lawyer:
             flash('Профиль юриста не найден', 'warning')
             return redirect(url_for('index'))
             
@@ -686,8 +735,8 @@ def register_routes(app):
             consultation_id = form.consultation_id.data
             consultation = Consultation.query.get_or_404(consultation_id)
             
-            # Проверка, назначена ли консультация текущему юристу
-            if consultation.lawyer_id != lawyer.id:
+            # Проверка, назначена ли консультация текущему юристу (для юристов)
+            if current_user.is_lawyer and consultation.lawyer_id != lawyer.id:
                 abort(403)
                 
             message = Message(
@@ -714,11 +763,11 @@ def register_routes(app):
     @app.route('/lawyer/billing/add', methods=['POST'])
     @login_required
     def lawyer_add_billing():
-        if not current_user.is_lawyer:
+        if not current_user.is_lawyer and not current_user.is_manager:
             abort(403)
             
         lawyer = current_user.lawyer_profile
-        if not lawyer:
+        if not lawyer and current_user.is_lawyer:
             flash('Профиль юриста не найден', 'warning')
             return redirect(url_for('index'))
             
@@ -729,8 +778,8 @@ def register_routes(app):
             consultation_id = form.consultation_id.data
             consultation = Consultation.query.get_or_404(consultation_id)
             
-            # Проверка, назначена ли консультация текущему юристу
-            if consultation.lawyer_id != lawyer.id:
+            # Проверка, назначена ли консультация текущему юристу (для юристов)
+            if current_user.is_lawyer and consultation.lawyer_id != lawyer.id:
                 abort(403)
                 
             # Получаем активный договор клиента для определения стоимости часа

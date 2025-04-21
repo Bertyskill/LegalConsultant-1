@@ -257,7 +257,7 @@
                 
                 <!-- Форма загрузки документа -->
                 <form method="POST" action="{{ url_for('upload_document') }}" enctype="multipart/form-data">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {{ form.hidden_tag() }}
                     <input type="hidden" name="consultation_id" value="{{ consultation.id }}">
                     
                     <div class="mb-3">
@@ -283,7 +283,7 @@
 
 <!-- Скрытая форма для обновления статуса -->
 <form id="statusUpdateForm" method="POST" action="{{ url_for('lawyer_update_consultation_status', id=consultation.id) }}" class="d-none">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {{ form.hidden_tag() }}
     <input type="hidden" name="status" id="statusInput">
 </form>
 {% endblock %}
